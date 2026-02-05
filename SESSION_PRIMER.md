@@ -25,14 +25,55 @@ CODING RULES:
 
 AFTER EACH FEATURE:
 1. Verify build passes: pnpm build
-2. Stage changes: git add .
-3. Commit with format: type: description
+2. Update documentation (see DOCUMENTATION RULE below)
+3. Stage changes: git add .
+4. Commit with format: type: description
    - feat: new feature
    - fix: bug fix
    - refactor: code restructure
    - docs: documentation
    - chore: config/dependencies
-4. Push to remote: git push origin main
+5. Push to remote: git push origin main
+
+DOCUMENTATION RULE (MANDATORY):
+After completing any feature, update ALL relevant md files:
+
+- ROADMAP.md
+  → Mark completed tasks with [x]
+  → Add new tasks if scope expanded
+  → Update sprint status
+
+- ARCHITECTURE.md
+  → Add new components to system diagram
+  → Document new data flows
+  → Update database schema if changed
+  → Add new API integrations
+
+- API.md
+  → Document new server actions
+  → Add function signatures and parameters
+  → Include example usage
+
+- DECISIONS.md
+  → Log any architectural choices made
+  → Document "why X over Y" reasoning
+  → Record any trade-offs
+
+- CONTEXT.md
+  → Update feature list if new capabilities added
+  → Adjust user stories if scope changed
+
+- SECURITY.md
+  → Document any new auth flows
+  → Update encryption details if changed
+  → Add new security considerations
+
+- README.md
+  → Update feature list
+  → Add new environment variables
+  → Update quick start if needed
+
+Never skip documentation. It compounds over time.
 
 FILE STRUCTURE:
 - src/app/ — routes and pages
@@ -40,14 +81,30 @@ FILE STRUCTURE:
 - src/lib/ — utilities (db, crypto, ai)
 - src/actions/ — server actions
 - src/types/ — TypeScript types
+- src/lib/templates/ — expert doc templates for kit generation
 
 KEY FILES:
 - src/lib/db/client.ts — Supabase client
 - src/lib/crypto/ — AES-256-GCM encryption
 - src/lib/ai/ — OpenAI embeddings, Claude incubator
+- src/lib/ai/thinking-profile.ts — Personal AI memory
+- src/lib/ai/personal-rag.ts — Knowledge base context
+- src/lib/github/ — GitHub integration
 - src/actions/notes.actions.ts — Note CRUD operations
+- src/actions/incubator.actions.ts — AI analysis actions
 
-Ask clarifying questions if requirements are ambiguous. Prioritize working code over perfect code.
+CURRENT FEATURES (Implemented):
+- Quick Capture (Cmd+K)
+- Idea Cloud with drag-drop and dark theme
+- Idea Chat Interface
+- Semantic "More Like This"
+- Incubator Mode with streaming
+- Personal Thinking Profile
+- Personal RAG/Knowledge Base
+- Project Kit Generation
+- GitHub Integration
+
+Ask clarifying questions if requirements are ambiguous. Prioritize working code over perfect code. Always update docs.
 ```
 
 ---
@@ -61,13 +118,38 @@ Ask clarifying questions if requirements are ambiguous. Prioritize working code 
 
 ---
 
+## Quick Commands
+
+Paste these as needed:
+
+### Check Documentation Status
+```
+Compare implemented features vs documentation. Update all md files to reflect current state.
+```
+
+### Run Full Test Suite
+```
+Run pnpm test && pnpm test:e2e and fix any failures.
+```
+
+### Pre-Commit Check
+```
+Before committing, verify:
+1. pnpm build passes
+2. pnpm lint has no errors
+3. All relevant md files are updated
+4. Commit message follows format
+```
+
+---
+
 ## Customization
 
 Add project-specific context as needed:
 
 ```
 CURRENT TASK:
-Implement [feature name] as described in CLAUDE_CODE_PRIORITY_FEATURES.md
+Implement [feature name]
 
 FOCUS AREAS:
 - [specific file or component]
@@ -75,4 +157,7 @@ FOCUS AREAS:
 
 AVOID:
 - [any anti-patterns or past mistakes]
+
+RELATED DOCS:
+- [specific md file to reference]
 ```
