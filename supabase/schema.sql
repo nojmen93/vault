@@ -88,3 +88,31 @@ BEGIN
   LIMIT match_count;
 END;
 $$;
+
+-- Project kits (generated starter kits from ideas)
+CREATE TABLE project_kits (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  idea_note_ids UUID[] DEFAULT '{}',
+  project_name TEXT NOT NULL,
+  project_slug TEXT NOT NULL,
+  files JSONB NOT NULL,
+  analysis JSONB,
+  tech_stack JSONB,
+  github_repo_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index for project kits
+CREATE INDEX project_kits_user_id_idx ON project_kits(user_id, created_at DESC);
+
+-- Row Level Security for project kits
+ALTER TABLE project_kits ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can CRUD own project kits" ON project_kits
+  FOR ALL USING (user_id = current_setting('app.current_user_id', true));
+
+-- Add GitHub access token to users (encrypted)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS github_access_token TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS github_username TEXT;

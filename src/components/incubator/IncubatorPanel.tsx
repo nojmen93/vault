@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Lightbulb, Sparkles, Loader2, ArrowRight, Link2, CheckCircle2, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { analyzeSelectedIdeas } from '@/actions/incubator.actions';
+import { ProjectKitGenerator } from './ProjectKitGenerator';
 import type { EncryptedNote } from '@/types';
 import type { IncubatorResponse } from '@/lib/ai/incubator';
 
@@ -17,6 +18,7 @@ export function IncubatorPanel({ notes }: IncubatorPanelProps): React.ReactEleme
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<IncubatorResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [analyzedIdea, setAnalyzedIdea] = useState<string>('');
 
   const handleToggleSelect = (id: string): void => {
     const newSelected = new Set(selectedIds);
@@ -41,6 +43,13 @@ export function IncubatorPanel({ notes }: IncubatorPanelProps): React.ReactEleme
 
     setIsAnalyzing(true);
     setError(null);
+
+    // Capture the combined idea text from selected notes
+    const selectedNotes = notes.filter((n) => selectedIds.has(n.id));
+    const ideaText = selectedNotes
+      .map((n) => (n.title ? `${n.title}: ${n.encryptedContent}` : n.encryptedContent))
+      .join('\n\n');
+    setAnalyzedIdea(ideaText);
 
     try {
       const result = await analyzeSelectedIdeas(Array.from(selectedIds));
@@ -224,6 +233,13 @@ export function IncubatorPanel({ notes }: IncubatorPanelProps): React.ReactEleme
                   </p>
                 </div>
               )}
+
+              {/* Project Kit Generator */}
+              <ProjectKitGenerator
+                idea={analyzedIdea}
+                analysis={analysis}
+                noteIds={Array.from(selectedIds)}
+              />
             </div>
           ) : (
             <div className="flex h-full items-center justify-center text-center">
