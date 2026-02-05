@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/db";
 import { analyzeIdeas, type IncubatorResponse } from "@/lib/ai/incubator";
+import { generateProfileContext, type ThinkingProfile } from "@/lib/ai/thinking-profile";
 import type { Result, ActionError } from "@/types";
 
 export async function analyzeSelectedIdeas(
@@ -45,8 +46,20 @@ export async function analyzeSelectedIdeas(
       return title ? `${title}: ${content}` : content;
     });
 
-    // Analyze with Claude
-    const analysis = await analyzeIdeas(ideas);
+    // Fetch user's thinking profile for personalization
+    let profileContext: string | undefined;
+    const { data: profileData } = await supabaseAdmin
+      .from("user_profiles")
+      .select("profile")
+      .eq("user_id", userId)
+      .single();
+
+    if (profileData?.profile) {
+      profileContext = generateProfileContext(profileData.profile as ThinkingProfile);
+    }
+
+    // Analyze with Claude (with profile context if available)
+    const analysis = await analyzeIdeas(ideas, profileContext);
 
     return { success: true, data: analysis };
   } catch (err) {

@@ -35,6 +35,26 @@ ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can CRUD own notes" ON notes
   FOR ALL USING (user_id = current_setting('app.current_user_id', true));
 
+-- User thinking profiles (for AI personalization)
+CREATE TABLE user_profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  profile JSONB NOT NULL,
+  note_count_at_generation INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id)
+);
+
+-- Index for quick profile lookup
+CREATE INDEX user_profiles_user_id_idx ON user_profiles(user_id);
+
+-- Row Level Security for profiles
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can CRUD own profile" ON user_profiles
+  FOR ALL USING (user_id = current_setting('app.current_user_id', true));
+
 -- Similarity search function
 CREATE OR REPLACE FUNCTION match_notes(
   query_embedding vector(1536),

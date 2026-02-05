@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Lightbulb, Sparkles, Loader2, ArrowRight, Link2, CheckCircle2 } from 'lucide-react';
+import { Lightbulb, Sparkles, Loader2, ArrowRight, Link2, CheckCircle2, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { analyzeSelectedIdeas } from '@/actions/incubator.actions';
 import type { EncryptedNote } from '@/types';
@@ -198,6 +198,30 @@ export function IncubatorPanel({ notes }: IncubatorPanelProps): React.ReactEleme
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+
+              {/* Personalized Insights */}
+              {analysis.personalizedInsights && analysis.personalizedInsights.length > 0 && (
+                <div className="rounded-lg border border-purple-500/30 bg-purple-500/5 p-4">
+                  <h3 className="flex items-center gap-2 font-medium text-sm text-purple-600 dark:text-purple-400 mb-3">
+                    <Brain className="h-4 w-4" />
+                    Personalized for You
+                  </h3>
+                  <ul className="space-y-2">
+                    {analysis.personalizedInsights.map((insight, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-sm"
+                      >
+                        <span className="text-purple-500 mt-0.5">•</span>
+                        <span>{insight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Based on your thinking profile
+                  </p>
                 </div>
               )}
             </div>

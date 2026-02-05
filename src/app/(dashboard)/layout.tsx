@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { QuickCaptureProvider, QuickCaptureModal } from "@/components/quick-capture";
 import { SimilarNotesProvider, SimilarNotesModal } from "@/components/similar-notes";
 import { DeleteConfirmationProvider, DeleteConfirmationModal } from "@/components/delete-confirmation";
+import { ProfileMilestoneNotifier } from "@/components/profile";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -30,6 +31,7 @@ export default async function DashboardLayout({
           <QuickCaptureModal />
           <SimilarNotesModal />
           <DeleteConfirmationModal />
+          <ProfileMilestoneNotifier />
         </DeleteConfirmationProvider>
       </SimilarNotesProvider>
     </QuickCaptureProvider>

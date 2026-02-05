@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Cloud, MessageSquare, Lightbulb, Settings } from "lucide-react";
+import { Cloud, MessageSquare, Lightbulb, Brain, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Idea Cloud", icon: Cloud, exact: true },
   { href: "/dashboard/chat", label: "Idea Stream", icon: MessageSquare },
   { href: "/dashboard/incubator", label: "Incubator", icon: Lightbulb },
+  { href: "/dashboard/profile", label: "Thinking Profile", icon: Brain },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
