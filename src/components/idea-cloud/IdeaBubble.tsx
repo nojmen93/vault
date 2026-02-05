@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSimilarNotes } from '@/components/similar-notes';
 
 interface IdeaBubbleProps {
   id: string;
@@ -22,6 +24,13 @@ export function IdeaBubble({
   total,
 }: IdeaBubbleProps): React.ReactElement {
   const [isHovered, setIsHovered] = useState(false);
+  const { openModal: openSimilarNotes } = useSimilarNotes();
+
+  const handleSimilarClick = (e: React.MouseEvent): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    openSimilarNotes(id);
+  };
 
   // Generate pseudo-random position based on index
   const getPosition = (): { top: string; left: string } => {
@@ -84,6 +93,16 @@ export function IdeaBubble({
       >
         {displayTitle}
       </span>
+      {/* Similar notes button (visible on hover) */}
+      {isHovered && (
+        <button
+          onClick={handleSimilarClick}
+          className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-purple-500 text-white flex items-center justify-center shadow-lg hover:bg-purple-600 transition-colors"
+          title="Find similar ideas"
+        >
+          <Sparkles className="h-3 w-3" />
+        </button>
+      )}
     </Link>
   );
 }
