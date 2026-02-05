@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { QuickCaptureProvider, QuickCaptureModal } from "@/components/quick-capture";
 import { SimilarNotesProvider, SimilarNotesModal } from "@/components/similar-notes";
+import { DeleteConfirmationProvider, DeleteConfirmationModal } from "@/components/delete-confirmation";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -18,15 +19,18 @@ export default async function DashboardLayout({
   return (
     <QuickCaptureProvider>
       <SimilarNotesProvider>
-        <div className="flex h-screen">
-          <Sidebar />
-          <div className="flex flex-1 flex-col">
-            <Header />
-            <main className="flex-1 overflow-auto p-6">{children}</main>
+        <DeleteConfirmationProvider>
+          <div className="flex h-screen">
+            <Sidebar />
+            <div className="flex flex-1 flex-col">
+              <Header />
+              <main className="flex-1 overflow-auto p-6">{children}</main>
+            </div>
           </div>
-        </div>
-        <QuickCaptureModal />
-        <SimilarNotesModal />
+          <QuickCaptureModal />
+          <SimilarNotesModal />
+          <DeleteConfirmationModal />
+        </DeleteConfirmationProvider>
       </SimilarNotesProvider>
     </QuickCaptureProvider>
   );

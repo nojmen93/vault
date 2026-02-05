@@ -20,7 +20,7 @@ interface ChatMessageProps {
     createdAt: string;
   };
   isOptimistic?: boolean;
-  onDelete?: (id: string) => void;
+  onDelete?: (id: string, title?: string | null) => void;
   onFindSimilar?: (id: string) => void;
 }
 
@@ -88,7 +88,7 @@ export function ChatMessage({
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive"
-              onClick={() => onDelete?.(note.id)}
+              onClick={() => onDelete?.(note.id, note.title)}
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete

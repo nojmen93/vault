@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ChatMessage } from './ChatMessage';
 import { quickCaptureNote } from '@/actions/notes.actions';
 import { useSimilarNotes } from '@/components/similar-notes';
+import { useDeleteConfirmation } from '@/components/delete-confirmation';
 import type { EncryptedNote } from '@/types';
 
 interface ChatInterfaceProps {
@@ -25,6 +26,7 @@ export function ChatInterface({ initialNotes }: ChatInterfaceProps): React.React
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
   const { openModal: openSimilarNotes } = useSimilarNotes();
+  const { openModal: openDeleteConfirmation } = useDeleteConfirmation();
 
   // Optimistic updates for instant feedback
   const [optimisticNotes, addOptimisticNote] = useOptimistic<OptimisticNote[], OptimisticNote>(
@@ -96,9 +98,8 @@ export function ChatInterface({ initialNotes }: ChatInterfaceProps): React.React
     }
   };
 
-  const handleDelete = async (id: string): Promise<void> => {
-    // TODO: Implement delete with confirmation
-    console.log('Delete:', id);
+  const handleDelete = (id: string, title?: string | null): void => {
+    openDeleteConfirmation(id, title);
   };
 
   const handleFindSimilar = (id: string): void => {
