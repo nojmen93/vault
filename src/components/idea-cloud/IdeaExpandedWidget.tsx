@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { X, Sparkles, Edit3, Trash2, ArrowRight, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useDeleteConfirmation } from '@/components/delete-confirmation';
@@ -32,15 +32,8 @@ export function IdeaExpandedWidget({
 }: IdeaExpandedWidgetProps): React.ReactElement {
   const router = useRouter();
   const { openModal: openDeleteConfirmation } = useDeleteConfirmation();
-  const [isClosing, setIsClosing] = useState(false);
-
-  const handleClose = (): void => {
-    setIsClosing(true);
-    setTimeout(onClose, 200);
-  };
 
   const handleIncubate = (): void => {
-    // Navigate to incubator with this note pre-selected
     router.push(`/dashboard/incubator?select=${note.id}`);
     onClose();
   };
@@ -83,33 +76,32 @@ export function IdeaExpandedWidget({
     return (
       <>
         {/* Backdrop */}
-        <div
-          className={cn(
-            'fixed inset-0 bg-black/50 z-50 transition-opacity duration-200',
-            isClosing ? 'opacity-0' : 'opacity-100'
-          )}
-          onClick={handleClose}
+        <motion.div
+          className="fixed inset-0 bg-black/50 z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
         />
 
         {/* Drawer */}
-        <div
-          className={cn(
-            'fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300 ease-out',
-            'rounded-t-2xl bg-background/95 backdrop-blur-xl border-t shadow-2xl',
-            'max-h-[85vh] overflow-hidden',
-            isClosing ? 'translate-y-full' : 'translate-y-0'
-          )}
+        <motion.div
+          className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl bg-background/95 backdrop-blur-xl border-t shadow-2xl max-h-[85vh] overflow-hidden"
+          initial={{ y: '100%' }}
+          animate={{ y: 0 }}
+          exit={{ y: '100%' }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         >
           {/* Handle */}
           <div className="flex justify-center pt-3 pb-2">
-            <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+            <div className="h-1.5 w-12 rounded-full bg-muted-foreground/30" />
           </div>
 
-          <div className="px-4 pb-8 overflow-y-auto max-h-[calc(85vh-40px)]">
+          <div className="px-5 pb-10 overflow-y-auto max-h-[calc(85vh-40px)]">
             <WidgetContent
               note={note}
               analysis={analysis}
-              onClose={handleClose}
+              onClose={onClose}
               onIncubate={handleIncubate}
               onEdit={handleEdit}
               onDelete={handleDelete}
@@ -118,7 +110,7 @@ export function IdeaExpandedWidget({
               getVerdictIcon={getVerdictIcon}
             />
           </div>
-        </div>
+        </motion.div>
       </>
     );
   }
@@ -127,33 +119,50 @@ export function IdeaExpandedWidget({
   return (
     <>
       {/* Backdrop */}
-      <div
-        className={cn(
-          'fixed inset-0 bg-black/20 z-40 transition-opacity duration-200',
-          isClosing ? 'opacity-0' : 'opacity-100'
-        )}
-        onClick={handleClose}
+      <motion.div
+        className="fixed inset-0 bg-black/20 z-40"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
       />
 
       {/* Expanded card */}
-      <div
-        className={cn(
-          'absolute z-50 w-80 transition-all duration-300 ease-out',
-          'rounded-2xl bg-background/95 backdrop-blur-xl border shadow-2xl',
-          'overflow-hidden',
-          isClosing ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-        )}
+      <motion.div
+        className="absolute z-50 w-80 rounded-2xl overflow-hidden"
         style={{
-          left: `${Math.min(Math.max(position.x, 10), 70)}%`,
-          top: `${Math.min(Math.max(position.y, 10), 60)}%`,
-          transform: 'translate(-50%, -50%)',
+          left: `${Math.min(Math.max(position.x, 20), 80)}%`,
+          top: `${Math.min(Math.max(position.y, 20), 70)}%`,
+          boxShadow: `
+            0 25px 50px -12px rgba(0, 0, 0, 0.25),
+            0 0 100px rgba(147, 51, 234, 0.1)
+          `,
         }}
+        initial={{
+          opacity: 0,
+          scale: 0.8,
+          x: '-50%',
+          y: '-50%'
+        }}
+        animate={{
+          opacity: 1,
+          scale: 1,
+          x: '-50%',
+          y: '-50%'
+        }}
+        exit={{
+          opacity: 0,
+          scale: 0.8,
+          x: '-50%',
+          y: '-50%'
+        }}
+        transition={{ type: 'spring', damping: 25, stiffness: 400 }}
       >
-        <div className="p-4">
+        <div className="bg-background/95 backdrop-blur-xl border border-white/20 rounded-2xl p-5">
           <WidgetContent
             note={note}
             analysis={analysis}
-            onClose={handleClose}
+            onClose={onClose}
             onIncubate={handleIncubate}
             onEdit={handleEdit}
             onDelete={handleDelete}
@@ -162,7 +171,7 @@ export function IdeaExpandedWidget({
             getVerdictIcon={getVerdictIcon}
           />
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }
@@ -193,7 +202,7 @@ function WidgetContent({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           {note.title && (
             <h3 className="font-semibold text-base truncate">{note.title}</h3>
@@ -206,17 +215,24 @@ function WidgetContent({
             })}
           </p>
         </div>
-        <button
+        <motion.button
           onClick={onClose}
           className="shrink-0 h-8 w-8 rounded-full bg-muted/80 flex items-center justify-center hover:bg-muted transition-colors"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           <X className="h-4 w-4" />
-        </button>
+        </motion.button>
       </div>
 
       {analysis ? (
         // Analyzed idea view
-        <div className="space-y-3">
+        <motion.div
+          className="space-y-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           {/* Verdict badge */}
           <div className="flex items-center gap-2">
             <span className={cn(
@@ -272,20 +288,25 @@ function WidgetContent({
               <RefreshCw className="h-3 w-3" />
             </Button>
           </div>
-        </div>
+        </motion.div>
       ) : (
         // Unanalyzed idea view
-        <div className="space-y-3">
+        <motion.div
+          className="space-y-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           {/* Full content */}
-          <div className="rounded-lg bg-muted/50 p-3">
-            <p className="text-sm whitespace-pre-wrap line-clamp-6">
+          <div className="rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 p-4 border border-muted/50">
+            <p className="text-sm whitespace-pre-wrap line-clamp-6 leading-relaxed">
               {note.encryptedContent}
             </p>
           </div>
 
           {/* Actions */}
           <div className="space-y-2">
-            <Button size="sm" className="w-full" onClick={onIncubate}>
+            <Button size="sm" className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600" onClick={onIncubate}>
               <Sparkles className="mr-2 h-3.5 w-3.5" />
               Incubate This Idea
             </Button>
@@ -294,12 +315,12 @@ function WidgetContent({
                 <Edit3 className="mr-1.5 h-3 w-3" />
                 Edit
               </Button>
-              <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={onDelete}>
+              <Button size="sm" variant="outline" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={onDelete}>
                 <Trash2 className="h-3 w-3" />
               </Button>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
