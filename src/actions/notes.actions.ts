@@ -304,6 +304,7 @@ export async function quickCaptureNote(
     }
 
     revalidatePath("/dashboard/notes");
+    revalidatePath("/dashboard/chat");
     revalidatePath("/dashboard");
 
     return {
