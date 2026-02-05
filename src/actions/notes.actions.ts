@@ -241,3 +241,62 @@ export async function getNoteById(
     };
   }
 }
+
+interface QuickCaptureInput {
+  title: string;
+  content: string;
+}
+
+export async function quickCaptureNote(
+  input: QuickCaptureInput
+): Promise<Result<EncryptedNote, ActionError>> {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return { success: false, error: { message: "Unauthorized", code: "UNAUTHORIZED" } };
+  }
+
+  try {
+    // Generate embedding from content
+    const embedding = await generateEmbedding(input.content);
+
+    // For quick capture, we store plaintext temporarily
+    // TODO: Implement proper client-side encryption flow
+    const { data, error } = await supabaseAdmin
+      .from("notes")
+      .insert({
+        user_id: userId,
+        title: input.title,
+        encrypted_content: input.content, // TODO: Encrypt client-side
+        iv: "quick-capture", // Placeholder
+        embedding,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return { success: false, error: { message: error.message, code: "DB_ERROR" } };
+    }
+
+    revalidatePath("/dashboard/notes");
+    revalidatePath("/dashboard");
+
+    return {
+      success: true,
+      data: {
+        id: data.id,
+        userId: data.user_id,
+        title: data.title,
+        encryptedContent: data.encrypted_content,
+        iv: data.iv,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+      },
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: { message: err instanceof Error ? err.message : "Unknown error", code: "UNKNOWN" },
+    };
+  }
+}
