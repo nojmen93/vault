@@ -1,10 +1,25 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/db";
 import { generateEmbedding } from "@/lib/ai/embeddings";
 import type { Result, ActionError, EncryptedNote } from "@/types";
+
+// Ensure user exists in Supabase (sync from Clerk)
+async function ensureUserExists(userId: string): Promise<void> {
+  const user = await currentUser();
+  if (!user) return;
+
+  const email = user.emailAddresses[0]?.emailAddress || "";
+
+  await supabaseAdmin
+    .from("users")
+    .upsert(
+      { id: userId, email },
+      { onConflict: "id" }
+    );
+}
 
 export async function createNote(
   formData: FormData
@@ -257,8 +272,17 @@ export async function quickCaptureNote(
   }
 
   try {
+    // Ensure user exists in Supabase (sync from Clerk)
+    await ensureUserExists(userId);
+
     // Generate embedding from content
-    const embedding = await generateEmbedding(input.content);
+    let embedding: number[] | null = null;
+    try {
+      embedding = await generateEmbedding(input.content);
+    } catch (embeddingErr) {
+      console.error("Embedding generation failed:", embeddingErr);
+      // Continue without embedding - note will still be saved
+    }
 
     // For quick capture, we store plaintext temporarily
     // TODO: Implement proper client-side encryption flow
@@ -275,6 +299,7 @@ export async function quickCaptureNote(
       .single();
 
     if (error) {
+      console.error("Supabase insert error:", error);
       return { success: false, error: { message: error.message, code: "DB_ERROR" } };
     }
 
@@ -294,6 +319,7 @@ export async function quickCaptureNote(
       },
     };
   } catch (err) {
+    console.error("quickCaptureNote error:", err);
     return {
       success: false,
       error: { message: err instanceof Error ? err.message : "Unknown error", code: "UNKNOWN" },
