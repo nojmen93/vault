@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Lightbulb, Sparkles, Loader2, ArrowRight, Link2, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { analyzeSelectedIdeas } from '@/actions/incubator.actions';
@@ -45,11 +46,15 @@ export function IncubatorPanel({ notes }: IncubatorPanelProps): React.ReactEleme
       const result = await analyzeSelectedIdeas(Array.from(selectedIds));
       if (result.success) {
         setAnalysis(result.data);
+        toast.success('Analysis complete!');
       } else {
         setError(result.error.message);
+        toast.error(result.error.message);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Analysis failed');
+      const message = err instanceof Error ? err.message : 'Analysis failed';
+      setError(message);
+      toast.error(message);
     } finally {
       setIsAnalyzing(false);
     }

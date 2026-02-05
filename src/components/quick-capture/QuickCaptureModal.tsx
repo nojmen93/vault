@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Sparkles, Send, Loader2 } from 'lucide-react';
 import {
   Dialog,
@@ -51,12 +52,13 @@ export function QuickCaptureModal(): React.ReactElement {
 
       if (result.success) {
         close();
+        toast.success('Idea captured!');
         router.refresh();
       } else {
-        console.error('Failed to capture idea:', result.error);
+        toast.error(result.error.message || 'Failed to capture idea');
       }
     } catch (error) {
-      console.error('Failed to capture idea:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to capture idea');
     } finally {
       setSaving(false);
     }

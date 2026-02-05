@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Loader2, Trash2, AlertTriangle } from 'lucide-react';
 import {
   Dialog,
@@ -31,12 +32,16 @@ export function DeleteConfirmationModal(): React.ReactElement {
       const result = await deleteNote(noteId);
       if (result.success) {
         closeModal();
+        toast.success('Idea deleted successfully');
         router.refresh();
       } else {
         setError(result.error.message);
+        toast.error(result.error.message);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete');
+      const message = err instanceof Error ? err.message : 'Failed to delete';
+      setError(message);
+      toast.error(message);
     } finally {
       setIsDeleting(false);
     }
