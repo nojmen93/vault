@@ -3,12 +3,13 @@
 ## Build Commands
 
 ```bash
-{package_manager} dev          # Start development server
-{package_manager} build        # Build for production
-{package_manager} start        # Start production server
-{package_manager} lint         # Run linter
-{package_manager} type-check   # Run TypeScript compiler check
-{package_manager} test         # Run tests
+pnpm dev          # Start development server (localhost:3000)
+pnpm build        # Build for production
+pnpm start        # Start production server
+pnpm lint         # Run ESLint
+pnpm type-check   # Run TypeScript compiler check
+pnpm test         # Run Vitest tests
+pnpm test:e2e     # Run Playwright E2E tests
 ```
 
 ## Coding Standards
@@ -47,16 +48,16 @@ function getUser(id): any {
 
 ```typescript
 // Server Component (default)
-export default async function Page(): Promise<React.ReactElement> {
-  const data = await getData();
-  return <Component data={data} />;
+export default async function NotesPage(): Promise<React.ReactElement> {
+  const notes = await getNotes();
+  return <NotesList notes={notes} />;
 }
 
 // Client Component (when needed)
 'use client';
 
-export function Interactive(): React.ReactElement {
-  const [state, setState] = useState('');
+export function NoteEditor(): React.ReactElement {
+  const [content, setContent] = useState('');
   // ...
 }
 ```
@@ -65,9 +66,9 @@ export function Interactive(): React.ReactElement {
 
 | Type | Convention | Example |
 |------|------------|---------|
-| Components | PascalCase | `UserCard.tsx` |
+| Components | PascalCase | `NoteCard.tsx` |
 | Utilities | camelCase | `formatDate.ts` |
-| Server Actions | camelCase with suffix | `user.actions.ts` |
+| Server Actions | camelCase with suffix | `notes.actions.ts` |
 | Types | PascalCase | `types/index.ts` |
 | Hooks | camelCase with prefix | `useDebounce.ts` |
 
@@ -78,17 +79,18 @@ export function Interactive(): React.ReactElement {
 import { useState, useEffect } from 'react';
 
 // 2. Third-party libraries
-import { ExternalLib } from 'external-lib';
+import { useUser } from '@clerk/nextjs';
+import { motion } from 'framer-motion';
 
 // 3. Internal absolute imports
 import { Button } from '@/components/ui/button';
-import { getData } from '@/actions/data.actions';
+import { getNotes } from '@/actions/notes.actions';
 
 // 4. Relative imports
-import { LocalComponent } from './LocalComponent';
+import { NoteCard } from './NoteCard';
 
 // 5. Types (last)
-import type { DataType } from '@/types';
+import type { Note } from '@/types';
 ```
 
 ### Error Handling
@@ -105,7 +107,7 @@ interface Result<T, E = ActionError> {
 }
 
 // Usage in Server Actions
-export async function createItem(data: FormData): Promise<Result<Item>> {
+export async function createNote(formData: FormData): Promise<Result<Note>> {
   const { userId } = await auth();
 
   if (!userId) {
@@ -113,18 +115,67 @@ export async function createItem(data: FormData): Promise<Result<Item>> {
   }
 
   try {
-    const item = await db.items.create({ ... });
-    return { success: true, data: item };
+    const note = await db.notes.create({ ... });
+    return { success: true, data: note };
   } catch (err) {
-    return { success: false, error: { message: 'Failed to create', code: 'DB_ERROR' } };
+    return { success: false, error: { message: 'Failed to create note', code: 'DB_ERROR' } };
   }
+}
+
+// Usage in components
+const result = await createNote(formData);
+if (!result.success) {
+  toast.error(result.error.message);
+  return;
+}
+// Use result.data safely
+```
+
+### Component Structure
+
+```typescript
+'use client'; // Only if needed
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import type { NoteCardProps } from '@/types';
+
+interface Props {
+  note: Note;
+  onDelete?: (id: string) => void;
+}
+
+export function NoteCard({ note, onDelete }: Props): React.ReactElement {
+  // 1. Hooks
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // 2. Derived state
+  const formattedDate = new Date(note.createdAt).toLocaleDateString();
+
+  // 3. Handlers
+  const handleDelete = async (): Promise<void> => {
+    setIsDeleting(true);
+    await onDelete?.(note.id);
+    setIsDeleting(false);
+  };
+
+  // 4. Render
+  return (
+    <div className="rounded-lg border p-4">
+      <h3>{note.title}</h3>
+      <p>{formattedDate}</p>
+      <Button onClick={handleDelete} disabled={isDeleting}>
+        Delete
+      </Button>
+    </div>
+  );
 }
 ```
 
 ## CSS / Styling
 
 - Use Tailwind CSS utility classes
-- Use CSS variables for theming
+- Use CSS variables for theming (defined in globals.css)
 - Use `cn()` utility for conditional classes
 
 ```typescript
@@ -135,6 +186,28 @@ import { cn } from '@/lib/utils';
   isActive && 'border-primary',
   className
 )} />
+```
+
+## Testing
+
+- Unit tests with Vitest for utilities and hooks
+- Component tests with Testing Library
+- E2E tests with Playwright for critical flows
+
+```typescript
+// src/lib/utils.test.ts
+import { describe, it, expect } from 'vitest';
+import { cn } from './utils';
+
+describe('cn', () => {
+  it('merges class names', () => {
+    expect(cn('foo', 'bar')).toBe('foo bar');
+  });
+
+  it('handles conditionals', () => {
+    expect(cn('foo', false && 'bar', 'baz')).toBe('foo baz');
+  });
+});
 ```
 
 ## Git Commit Messages
@@ -151,7 +224,8 @@ Types:
 
 Examples:
 ```
-feat(auth): add OAuth login
-fix(api): handle empty response
+feat(notes): add auto-save with debounce
+fix(crypto): handle empty content encryption
 chore: update dependencies
+docs: add API documentation
 ```

@@ -1,73 +1,94 @@
 # Roadmap
 
-## Sprint 0: Foundation
+## Sprint 0: Foundation (Current)
 
 **Goal**: Set up project infrastructure and core dependencies
 
-- [ ] Initialize project with chosen framework
-- [ ] Configure styling and UI components
-- [ ] Set up authentication
-- [ ] Configure database
-- [ ] Create project folder structure
-- [ ] Build landing page
+- [x] Initialize Next.js 15 with TypeScript
+- [x] Configure Tailwind CSS and Shadcn/UI
+- [x] Set up Clerk authentication
+- [x] Configure Supabase with pgvector
+- [x] Implement client-side encryption utilities
+- [x] Create project folder structure
+- [x] Build landing page
 
-**Success Criteria**: Development environment running, basic auth working
+## Sprint 1: Core Notes
 
-## Sprint 1: Core Features
+**Goal**: Complete notes CRUD with encryption
 
-**Goal**: Implement primary functionality
-
-- [ ] {core_feature_1}
-- [ ] {core_feature_2}
-- [ ] {core_feature_3}
+- [ ] Wire up dashboard with notes list
+- [ ] Implement NoteEditor with auto-save
+- [ ] Connect encryption to note creation/editing
+- [ ] Add user sync from Clerk to Supabase
+- [ ] Implement note deletion with confirmation
 - [ ] Add loading states and error handling
-- [ ] Test core flow end-to-end
+- [ ] Test encryption/decryption flow end-to-end
 
-**Success Criteria**: Users can complete primary use case
+## Sprint 2: Search & Connections
 
-## Sprint 2: Enhanced Features
+**Goal**: Implement semantic search and related notes
 
-**Goal**: Add secondary features and polish
+- [ ] Generate embeddings on note save
+- [ ] Implement search UI in dashboard
+- [ ] Create search Server Action with pgvector
+- [ ] Display search results with relevance scores
+- [ ] Add "Related Notes" sidebar component
+- [ ] Optimize embedding generation (batch/debounce)
 
-- [ ] {enhanced_feature_1}
-- [ ] {enhanced_feature_2}
-- [ ] Implement search/filtering
-- [ ] Add user settings
-- [ ] Optimize performance
+## Sprint 3: Incubator Mode
 
-**Success Criteria**: Feature-complete MVP
+**Goal**: Claude-powered idea analysis and roadmaps
 
-## Sprint 3: Launch Prep
+- [ ] Design Incubator Mode UI
+- [ ] Implement note selection for analysis
+- [ ] Create Claude API integration
+- [ ] Build analysis prompt templates
+- [ ] Display structured analysis results
+- [ ] Generate and display project roadmaps
+- [ ] Add "Save Analysis" functionality
+
+## Sprint 4: Polish & Launch
 
 **Goal**: Production readiness
 
 - [ ] Add comprehensive error handling
 - [ ] Implement rate limiting
+- [ ] Add usage analytics (privacy-respecting)
 - [ ] Performance optimization
 - [ ] Security audit
 - [ ] Write user documentation
 - [ ] Deploy to production
 
-**Success Criteria**: Ready for public users
-
 ---
 
 ## Future Backlog
 
-### Phase 2 Features
-- [ ] {future_feature_1}
-- [ ] {future_feature_2}
-- [ ] {future_feature_3}
+### Collaboration
+- [ ] Share notes with specific users
+- [ ] Collaborative editing
+- [ ] Team workspaces
+
+### Mobile
+- [ ] Progressive Web App (PWA)
+- [ ] Native mobile app
 
 ### Integrations
-- [ ] Third-party integrations
+- [ ] Import from Notion
+- [ ] Import from Obsidian
+- [ ] Export to Markdown
 - [ ] API for external tools
-- [ ] Webhooks
 
-### Scale
-- [ ] Analytics dashboard
-- [ ] Team/organization features
-- [ ] Premium tier
+### Advanced AI
+- [ ] Custom prompt templates
+- [ ] Multiple AI model options
+- [ ] Voice-to-note transcription
+- [ ] Image analysis for notes
+
+### Enterprise
+- [ ] SSO / SAML
+- [ ] Audit logs
+- [ ] Admin dashboard
+- [ ] Self-hosted option
 
 ---
 
@@ -75,6 +96,7 @@
 
 | Milestone | Target | Status |
 |-----------|--------|--------|
-| MVP Launch | Sprint 3 | Planned |
-| First 100 Users | +2 weeks | Planned |
-| Product-Market Fit | +2 months | Planned |
+| MVP Launch | Sprint 4 | In Progress |
+| 100 Users | +2 weeks | Planned |
+| 1,000 Users | +2 months | Planned |
+| Seed Funding | +3 months | Planned |

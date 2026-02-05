@@ -4,11 +4,14 @@
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
-| Framework | {framework} | {framework_purpose} |
-| Auth | {auth} | User authentication & management |
-| Database | {database} | Data persistence |
-| UI | {ui_framework} | Styling & components |
-| Deployment | {deployment} | Hosting & infrastructure |
+| Framework | Next.js 15 (App Router) | Full-stack React framework |
+| Auth | Clerk | User authentication & management |
+| Database | Supabase (PostgreSQL) | Data persistence |
+| Vector Search | pgvector | Semantic similarity search |
+| AI - Embeddings | OpenAI text-embedding-3-small | Convert text to vectors |
+| AI - Analysis | Anthropic Claude | Idea validation & roadmaps |
+| UI | Tailwind CSS + Shadcn/UI | Styling & components |
+| Encryption | Web Crypto API | Client-side AES-256-GCM |
 
 ## System Architecture
 
@@ -17,73 +20,113 @@
 │                         Client (Browser)                         │
 ├─────────────────────────────────────────────────────────────────┤
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
-│  │   {app}     │  │   State     │  │     Local Storage       │  │
-│  │     App     │  │  Management │  │   (user preferences)    │  │
+│  │   Next.js   │  │  Web Crypto │  │     Local Storage       │  │
+│  │     App     │  │     API     │  │  (encryption key salt)  │  │
 │  └──────┬──────┘  └──────┬──────┘  └─────────────────────────┘  │
-└─────────┼────────────────┼──────────────────────────────────────┘
-          │                │
-          │ HTTPS          │
-          ▼                ▼
+│         │                │                                       │
+│         │    ┌───────────┴───────────┐                          │
+│         │    │  Encrypt/Decrypt      │                          │
+│         │    │  (AES-256-GCM)        │                          │
+│         │    └───────────────────────┘                          │
+└─────────┼───────────────────────────────────────────────────────┘
+          │
+          │ HTTPS (encrypted content only)
+          ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                         Server                                   │
+│                         Server (Vercel)                          │
 ├─────────────────────────────────────────────────────────────────┤
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
-│  │   API       │  │   Auth      │  │     Business Logic      │  │
-│  │   Routes    │  │  Middleware │  │                         │  │
+│  │   Next.js   │  │   Clerk     │  │     Server Actions      │  │
+│  │   API/RSC   │  │  Middleware │  │    (notes.actions.ts)   │  │
 │  └──────┬──────┘  └─────────────┘  └───────────┬─────────────┘  │
 └─────────┼─────────────────────────────────────┼─────────────────┘
           │                                      │
           ▼                                      ▼
 ┌─────────────────────┐              ┌─────────────────────────────┐
-│       Auth          │              │         Database            │
+│       Clerk         │              │         Supabase            │
 │  (Authentication)   │              │  ┌─────────────────────┐    │
-│                     │              │  │    Tables           │    │
-│  - User management  │              │  │  - users            │    │
-│  - Session tokens   │              │  │  - {domain_tables}  │    │
-│  - OAuth providers  │              │  └─────────────────────┘    │
-└─────────────────────┘              └─────────────────────────────┘
+│                     │              │  │    PostgreSQL       │    │
+│  - User management  │              │  │  - users table      │    │
+│  - Session tokens   │              │  │  - notes table      │    │
+│  - OAuth providers  │              │  │  - pgvector index   │    │
+└─────────────────────┘              │  └─────────────────────┘    │
+                                     └─────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        AI Services                               │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────┐      ┌─────────────────────────────┐   │
+│  │       OpenAI        │      │        Anthropic            │   │
+│  │  text-embedding-3   │      │     Claude Sonnet 4         │   │
+│  │  (1536 dimensions)  │      │   (idea analysis/roadmaps)  │   │
+│  └─────────────────────┘      └─────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Data Flow
 
-### {primary_action}
+### Creating a Note
 
 ```
-1. User initiates action
-2. Client validates input
-3. Request sent to server
-4. Server authenticates request
-5. Business logic executes
-6. Data persisted to database
-7. Response returned to client
+1. User types note content
+2. Content encrypted client-side (AES-256-GCM)
+3. Plaintext sent to OpenAI for embedding (then discarded)
+4. Encrypted content + embedding stored in Supabase
+5. Server never sees unencrypted content
+```
+
+### Searching Notes
+
+```
+1. User enters search query
+2. Query sent to OpenAI for embedding
+3. pgvector finds similar note embeddings
+4. Encrypted notes returned to client
+5. Notes decrypted client-side for display
+```
+
+### Incubator Mode
+
+```
+1. User selects notes for analysis
+2. Notes decrypted client-side
+3. Plaintext sent to Claude API
+4. Claude returns analysis/roadmap
+5. Analysis displayed (not stored unless user saves)
 ```
 
 ## Directory Structure
 
 ```
-{project_name}/
-├── src/
-│   ├── app/                  # Application routes
-│   ├── components/           # React components
-│   │   ├── ui/               # Base UI components
-│   │   └── {feature}/        # Feature-specific components
-│   ├── lib/                  # Utilities and helpers
-│   ├── actions/              # Server actions
-│   └── types/                # TypeScript types
-├── public/                   # Static assets
-└── tests/                    # Test files
+src/
+├── app/                      # Next.js App Router
+│   ├── (auth)/               # Auth route group
+│   │   ├── sign-in/          # Clerk sign-in page
+│   │   └── sign-up/          # Clerk sign-up page
+│   ├── (dashboard)/          # Protected route group
+│   │   ├── layout.tsx        # Dashboard layout with sidebar
+│   │   ├── dashboard/        # Main dashboard
+│   │   └── notes/            # Notes CRUD pages
+│   ├── layout.tsx            # Root layout with providers
+│   ├── page.tsx              # Landing page
+│   └── globals.css           # Global styles + CSS variables
+├── components/
+│   ├── ui/                   # Shadcn/UI components
+│   ├── notes/                # Note-specific components
+│   └── layout/               # Layout components
+├── lib/
+│   ├── db/                   # Supabase client & types
+│   ├── crypto/               # Encryption utilities
+│   └── ai/                   # OpenAI & Claude integrations
+├── actions/                  # Server Actions
+└── types/                    # Shared TypeScript types
 ```
 
 ## Key Design Decisions
 
-1. **{decision_1}**: {rationale_1}
-2. **{decision_2}**: {rationale_2}
-3. **{decision_3}**: {rationale_3}
-
-## Security Considerations
-
-- All API endpoints require authentication
-- Input validation on both client and server
-- Rate limiting on sensitive endpoints
-- Environment variables for secrets
-- HTTPS only in production
+1. **Client-side encryption**: All note content encrypted before leaving the browser
+2. **Server Actions**: Using Next.js Server Actions instead of API routes for type safety
+3. **pgvector**: Embeddings stored in PostgreSQL for efficient similarity search
+4. **Clerk**: Managed auth to avoid security pitfalls of DIY authentication
+5. **Result pattern**: All server actions return `{ success, data } | { success, error }`
