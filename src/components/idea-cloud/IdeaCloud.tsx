@@ -19,10 +19,11 @@ interface IdeaCloudProps {
   notes: EncryptedNote[];
 }
 
-// Generate default position using golden angle distribution
-function getDefaultPosition(index: number): Position {
-  const seed = index * 137.5; // Golden angle for distribution
-  const radius = 25 + (index % 4) * 12;
+// Generate random position for first load
+function getRandomPosition(index: number): Position {
+  // Use golden angle for nice distribution
+  const seed = index * 137.5;
+  const radius = 20 + (index % 5) * 10;
   const angle = (seed % 360) * (Math.PI / 180);
   const centerX = 50;
   const centerY = 50;
@@ -39,36 +40,38 @@ function PlaceholderBubble({ index, delay }: { index: number; delay: number }): 
   const positions = [
     { x: 30, y: 35 },
     { x: 70, y: 40 },
-    { x: 50, y: 65 },
-    { x: 25, y: 60 },
+    { x: 50, y: 60 },
+    { x: 25, y: 55 },
     { x: 75, y: 30 },
   ];
   const pos = positions[index % positions.length];
-  const size = 70 + (index % 3) * 20;
+  const size = 60 + (index % 3) * 15;
+  const grayShade = 0.15 + (index % 3) * 0.05;
 
   return (
     <motion.div
-      className="absolute rounded-full bg-gradient-to-br from-purple-100/40 to-blue-100/40 backdrop-blur-sm border border-white/30 flex items-center justify-center"
+      className="absolute rounded-full backdrop-blur-sm border border-white/5 flex items-center justify-center"
       style={{
         width: size,
         height: size,
         left: `${pos.x}%`,
         top: `${pos.y}%`,
         transform: 'translate(-50%, -50%)',
+        backgroundColor: `rgba(255, 255, 255, ${grayShade})`,
       }}
       initial={{ opacity: 0, scale: 0 }}
       animate={{
-        opacity: [0.3, 0.5, 0.3],
+        opacity: [0.2, 0.4, 0.2],
         scale: [0.95, 1, 0.95],
-        y: [-5, 5, -5],
+        y: [-4, 4, -4],
       }}
       transition={{
-        opacity: { duration: 4, repeat: Infinity, delay },
-        scale: { duration: 4, repeat: Infinity, delay },
-        y: { duration: 6, repeat: Infinity, delay: delay * 0.5, ease: 'easeInOut' },
+        opacity: { duration: 5, repeat: Infinity, delay },
+        scale: { duration: 5, repeat: Infinity, delay },
+        y: { duration: 7, repeat: Infinity, delay: delay * 0.5, ease: 'easeInOut' },
       }}
     >
-      <Plus className="h-5 w-5 text-purple-300/60" />
+      <Plus className="h-4 w-4 text-white/30" />
     </motion.div>
   );
 }
@@ -122,61 +125,66 @@ export function IdeaCloud({ notes }: IdeaCloudProps): React.ReactElement {
   const expandedPosition = useMemo(() => {
     if (!expandedId) return { x: 50, y: 50 };
     const idx = displayedNotes.findIndex(n => n.id === expandedId);
-    const defaultPos = getDefaultPosition(idx >= 0 ? idx : 0);
+    const defaultPos = getRandomPosition(idx >= 0 ? idx : 0);
     return getPosition(expandedId, defaultPos);
   }, [expandedId, displayedNotes, getPosition]);
 
   // Empty state
   if (notes.length === 0) {
     return (
-      <div className="relative h-full w-full overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50/80 via-blue-50/80 to-cyan-50/80">
-        {/* Animated background */}
+      <div className="relative h-full w-full overflow-hidden rounded-2xl bg-[#0a0a0a]">
+        {/* Subtle ambient glow */}
         <div className="absolute inset-0 overflow-hidden">
           <motion.div
-            className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-purple-200/40 blur-3xl"
-            animate={{ x: [0, 30, 0], y: [0, 20, 0] }}
+            className="absolute top-1/4 left-1/4 h-[400px] w-[400px] rounded-full blur-[150px]"
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)' }}
+            animate={{
+              x: [0, 30, 0],
+              y: [0, 20, 0],
+              opacity: [0.03, 0.05, 0.03],
+            }}
             transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
           />
           <motion.div
-            className="absolute top-1/2 -right-32 h-96 w-96 rounded-full bg-blue-200/40 blur-3xl"
-            animate={{ x: [0, -20, 0], y: [0, 30, 0] }}
+            className="absolute bottom-1/4 right-1/4 h-[300px] w-[300px] rounded-full blur-[120px]"
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)' }}
+            animate={{
+              x: [0, -20, 0],
+              y: [0, 30, 0],
+              opacity: [0.02, 0.04, 0.02],
+            }}
             transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="absolute -bottom-32 left-1/3 h-96 w-96 rounded-full bg-cyan-200/40 blur-3xl"
-            animate={{ x: [0, 25, 0], y: [0, -15, 0] }}
-            transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
           />
         </div>
 
         {/* Placeholder bubbles */}
         <div className="absolute inset-0">
           {[0, 1, 2, 3, 4].map((i) => (
-            <PlaceholderBubble key={i} index={i} delay={i * 0.5} />
+            <PlaceholderBubble key={i} index={i} delay={i * 0.6} />
           ))}
         </div>
 
         {/* Empty state message */}
         <div className="relative flex h-full items-center justify-center">
           <motion.div
-            className="text-center z-10 bg-white/60 backdrop-blur-lg rounded-2xl p-8 shadow-xl border border-white/50"
+            className="text-center z-10 bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
             <motion.div
-              className="mx-auto mb-4 h-20 w-20 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center shadow-lg"
+              className="mx-auto mb-4 h-16 w-16 rounded-full bg-white/10 flex items-center justify-center"
               animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 3, repeat: Infinity }}
+              transition={{ duration: 4, repeat: Infinity }}
             >
-              <Sparkles className="h-8 w-8 text-purple-500" />
+              <Sparkles className="h-7 w-7 text-white/60" />
             </motion.div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">Your ideas will appear here</h3>
-            <p className="text-sm text-muted-foreground mb-4 max-w-xs">
+            <h3 className="text-lg font-medium text-white/90 mb-2">Your ideas will appear here</h3>
+            <p className="text-sm text-white/50 mb-4 max-w-xs">
               Capture your first thought and watch your idea cloud come to life
             </p>
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <kbd className="px-2 py-1 rounded-md bg-muted/80 font-mono text-xs shadow-sm">⌘K</kbd>
+            <div className="flex items-center justify-center gap-2 text-sm text-white/40">
+              <kbd className="px-2 py-1 rounded-md bg-white/10 font-mono text-xs">⌘K</kbd>
               <span>to capture an idea</span>
             </div>
           </motion.div>
@@ -193,45 +201,39 @@ export function IdeaCloud({ notes }: IdeaCloudProps): React.ReactElement {
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-hidden rounded-2xl"
-      style={{
-        background: 'linear-gradient(135deg, rgba(243, 232, 255, 0.8) 0%, rgba(219, 234, 254, 0.8) 50%, rgba(207, 250, 254, 0.8) 100%)',
-      }}
+      className="relative h-full w-full overflow-hidden rounded-2xl bg-[#0a0a0a]"
     >
-      {/* Animated gradient background */}
+      {/* Subtle ambient glow - grayscale only */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          className="absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-purple-200/50 blur-[100px]"
+          className="absolute -top-20 -left-20 h-[500px] w-[500px] rounded-full blur-[150px]"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.04)' }}
           animate={{
             x: [0, 40, 0],
             y: [0, 30, 0],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute top-1/3 -right-32 h-[400px] w-[400px] rounded-full bg-blue-200/50 blur-[80px]"
-          animate={{
-            x: [0, -30, 0],
-            y: [0, 40, 0],
+            opacity: [0.04, 0.06, 0.04],
           }}
           transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute -bottom-32 left-1/4 h-[450px] w-[450px] rounded-full bg-cyan-200/50 blur-[90px]"
+          className="absolute top-1/2 -right-20 h-[400px] w-[400px] rounded-full blur-[120px]"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)' }}
+          animate={{
+            x: [0, -30, 0],
+            y: [0, 40, 0],
+            opacity: [0.03, 0.05, 0.03],
+          }}
+          transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute -bottom-20 left-1/3 h-[350px] w-[350px] rounded-full blur-[100px]"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.025)' }}
           animate={{
             x: [0, 35, 0],
             y: [0, -25, 0],
+            opacity: [0.025, 0.04, 0.025],
           }}
           transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-1/2 h-[300px] w-[300px] rounded-full bg-pink-200/30 blur-[70px]"
-          style={{ transform: 'translate(-50%, -50%)' }}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
         />
       </div>
 
@@ -239,7 +241,7 @@ export function IdeaCloud({ notes }: IdeaCloudProps): React.ReactElement {
       <AnimatePresence>
         <div className="relative h-full w-full">
           {displayedNotes.map((note, index) => {
-            const defaultPos = getDefaultPosition(index);
+            const defaultPos = getRandomPosition(index);
             const position = getPosition(note.id, defaultPos);
 
             return (
@@ -269,7 +271,7 @@ export function IdeaCloud({ notes }: IdeaCloudProps): React.ReactElement {
       {/* Show count if more than 20 */}
       {notes.length > 20 && (
         <motion.div
-          className="absolute bottom-4 right-4 rounded-full bg-white/70 backdrop-blur-sm px-4 py-2 text-xs text-muted-foreground shadow-lg border border-white/50"
+          className="absolute bottom-4 right-4 rounded-full bg-white/10 backdrop-blur-sm px-4 py-2 text-xs text-white/60 border border-white/10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
