@@ -1,20 +1,16 @@
+import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getNotes } from "@/actions/notes.actions";
-import { IdeaCloud } from "@/components/idea-cloud";
+import { IdeaCloud, IdeaCloudSkeleton } from "@/components/idea-cloud";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default async function DashboardPage(): Promise<React.ReactElement> {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
-
+async function DashboardContent(): Promise<React.ReactElement> {
   const result = await getNotes();
   const notes = result.success ? result.data : [];
 
   return (
-    <div className="flex h-full flex-col gap-4">
+    <>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -29,6 +25,41 @@ export default async function DashboardPage(): Promise<React.ReactElement> {
       <div className="flex-1 min-h-[500px]">
         <IdeaCloud notes={notes} />
       </div>
+    </>
+  );
+}
+
+function DashboardSkeleton(): React.ReactElement {
+  return (
+    <>
+      {/* Header skeleton */}
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-8 w-32 mb-2" />
+          <Skeleton className="h-4 w-40" />
+        </div>
+      </div>
+
+      {/* Idea Cloud skeleton */}
+      <div className="flex-1 min-h-[500px]">
+        <IdeaCloudSkeleton />
+      </div>
+    </>
+  );
+}
+
+export default async function DashboardPage(): Promise<React.ReactElement> {
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  return (
+    <div className="flex h-full flex-col gap-4">
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardContent />
+      </Suspense>
     </div>
   );
 }
