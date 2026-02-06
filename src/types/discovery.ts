@@ -33,6 +33,14 @@ export type Priority =
   | "helping_others"
   | "learning";
 
+// Question 6: Location/Region
+export type UserRegion =
+  | "europe"
+  | "scandinavia"
+  | "us"
+  | "uk"
+  | "other";
+
 // Question answers
 export interface DiscoveryAnswers {
   selfDescription?: SelfDescription;
@@ -41,6 +49,7 @@ export interface DiscoveryAnswers {
   budget?: BudgetLevel;
   priorities?: Priority[];
   skills?: string;
+  region?: UserRegion;
 }
 
 // Persona classification (internal)
@@ -58,20 +67,46 @@ export type TechnicalLevel = "none" | "low" | "medium" | "high";
 // Idea category
 export type IdeaCategory = "passive" | "service" | "product" | "content" | "technical";
 
+// Competition level
+export type CompetitionLevel = "low" | "medium" | "high";
+
+// Region focus for ideas
+export type IdeaRegion = "global" | "europe" | "scandinavia" | "us" | "uk";
+
+// Income timeline
+export interface IncomeTimeline {
+  month1to3: string;
+  month6: string;
+  month12: string;
+}
+
 // Generated idea suggestion
 export interface IdeaSuggestion {
   id: string;
   name: string;
+  oneLiner?: string;
   description: string;
   timeUpfront: string;
   timeOngoing: string;
+  // Legacy fields (kept for backwards compatibility)
   incomeMin: number;
   incomeMax: number;
+  // New detailed income fields
+  incomeTimeline?: IncomeTimeline;
+  incomeModel?: string;
   whyFitsYou: string;
   skillsNeeded: string;
   startupCost: string;
   technicalLevel: TechnicalLevel;
   category: IdeaCategory;
+  // New fields for world-class suggestions
+  region?: IdeaRegion;
+  platforms?: string[];
+  tools?: string[];
+  firstSteps?: string[];
+  competition?: CompetitionLevel;
+  risks?: string[];
+  edgeForYou?: string;
 }
 
 // Discovery session (stored in DB)

@@ -147,7 +147,40 @@ const priorityOptions: QuestionOption<string>[] = [
   },
 ];
 
-type WizardStep = 'welcome' | 'q1' | 'q1_expertise' | 'q2' | 'q3' | 'q4' | 'q5' | 'results';
+const regionOptions: QuestionOption<string>[] = [
+  {
+    value: 'europe',
+    icon: '🇪🇺',
+    label: 'Europe',
+    description: 'EU-friendly platforms, VAT considerations',
+  },
+  {
+    value: 'scandinavia',
+    icon: '🇸🇪',
+    label: 'Scandinavia',
+    description: 'Sweden, Norway, Denmark, Finland',
+  },
+  {
+    value: 'us',
+    icon: '🇺🇸',
+    label: 'United States',
+    description: 'US-specific platforms and markets',
+  },
+  {
+    value: 'uk',
+    icon: '🇬🇧',
+    label: 'United Kingdom',
+    description: 'UK-specific opportunities',
+  },
+  {
+    value: 'other',
+    icon: '🌍',
+    label: 'Other / Global',
+    description: 'Globally accessible options',
+  },
+];
+
+type WizardStep = 'welcome' | 'q1' | 'q1_expertise' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6' | 'results';
 
 export function IdeaDiscoveryWizard({
   onClose,
@@ -162,7 +195,7 @@ export function IdeaDiscoveryWizard({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const totalQuestions = 5;
+  const totalQuestions = 6;
   const getCurrentQuestionNumber = (): number => {
     switch (step) {
       case 'q1':
@@ -176,6 +209,8 @@ export function IdeaDiscoveryWizard({
         return 4;
       case 'q5':
         return 5;
+      case 'q6':
+        return 6;
       default:
         return 0;
     }
@@ -206,6 +241,9 @@ export function IdeaDiscoveryWizard({
         setStep('q5');
         break;
       case 'q5':
+        setStep('q6');
+        break;
+      case 'q6':
         // Generate suggestions
         setStep('results');
         setIsLoading(true);
@@ -246,8 +284,11 @@ export function IdeaDiscoveryWizard({
       case 'q5':
         setStep('q4');
         break;
-      case 'results':
+      case 'q6':
         setStep('q5');
+        break;
+      case 'results':
+        setStep('q6');
         break;
     }
   };
@@ -276,6 +317,10 @@ export function IdeaDiscoveryWizard({
         break;
       case 'q5':
         setAnswers((prev) => ({ ...prev, skills: undefined }));
+        setStep('q6');
+        break;
+      case 'q6':
+        setAnswers((prev) => ({ ...prev, region: undefined }));
         handleNext();
         break;
     }
@@ -450,6 +495,27 @@ export function IdeaDiscoveryWizard({
             onBack={handleBack}
             onSkip={handleSkip}
             skipLabel="Starting fresh / Not sure"
+          />
+        );
+
+      case 'q6':
+        return (
+          <DiscoveryQuestion
+            question="Where are you based?"
+            subtitle="This helps me suggest region-specific platforms and opportunities"
+            type="single"
+            options={regionOptions}
+            value={answers.region}
+            onChange={(value) =>
+              setAnswers((prev) => ({
+                ...prev,
+                region: value as DiscoveryAnswers['region'],
+              }))
+            }
+            onNext={handleNext}
+            onBack={handleBack}
+            onSkip={handleSkip}
+            skipLabel="Prefer not to say"
           />
         );
 

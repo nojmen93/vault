@@ -53,6 +53,57 @@ export function classifyPersona(answers: DiscoveryAnswers): PersonaType {
 }
 
 /**
+ * Get region-specific context for the AI prompt
+ */
+function getRegionContext(region?: string): string {
+  switch (region) {
+    case 'europe':
+      return `
+USER IS BASED IN EUROPE:
+- Suggest EU-friendly platforms: Stripe, Lemonsqueezy, Ko-fi, Gumroad, Paddle
+- Consider VAT/MOSS implications for digital products
+- Reference European marketplaces where relevant
+- GDPR-compliant solutions are a selling point
+- B2B opportunities: European SMBs are often underserved
+- Use EUR (€) for all pricing`;
+
+    case 'scandinavia':
+      return `
+USER IS BASED IN SCANDINAVIA (Sweden/Norway/Denmark/Finland):
+- Strong emphasis on EU-friendly platforms: Stripe, Lemonsqueezy, Ko-fi, Gumroad
+- Mention regional marketplaces: Tradera (Sweden), Finn.no (Norway), DBA (Denmark)
+- Content in Swedish/Norwegian/Danish has MUCH less competition than English
+- Mention Nordic funding/grants if relevant: Innovasjon Norge, Vinnova, Business Finland
+- B2B focus: Nordic companies pay well but expect quality
+- Consider the high-trust society: reputation matters, quality over quantity
+- Use EUR (€) or local currencies (SEK, NOK, DKK) for pricing`;
+
+    case 'us':
+      return `
+USER IS BASED IN THE UNITED STATES:
+- Suggest US-specific platforms and marketplaces
+- Consider US tax implications
+- Reference American market sizes and opportunities
+- Use USD ($) for all pricing`;
+
+    case 'uk':
+      return `
+USER IS BASED IN THE UNITED KINGDOM:
+- Mix of EU and US platform options
+- Consider post-Brexit implications for EU sales
+- Reference UK-specific marketplaces and opportunities
+- Use GBP (£) for pricing`;
+
+    default:
+      return `
+USER LOCATION NOT SPECIFIED:
+- Suggest globally accessible options
+- Mention both US and EU platforms where relevant
+- Default to USD ($) for pricing but mention global accessibility`;
+  }
+}
+
+/**
  * Build the prompt for Claude based on user answers
  */
 function buildPrompt(
@@ -77,8 +128,8 @@ function buildPrompt(
     passive: 'wants to set it up once and mostly forget it',
     // Budget
     zero: 'has zero budget - just their time',
-    little: 'has a small budget ($50-200)',
-    some: 'has some savings to invest ($500-2000)',
+    little: 'has a small budget (€50-200)',
+    some: 'has some savings to invest (€500-2000)',
     unlimited: 'money is not an issue',
     // Priorities
     money_fast: 'making money quickly',
@@ -110,6 +161,8 @@ function buildPrompt(
     ? `Their expertise is in: ${answers.expertiseField}`
     : '';
 
+  const regionContext = getRegionContext(answers.region);
+
   const notesContext = relevantNotes?.length
     ? `\n\nTheir existing ideas/interests:\n${relevantNotes
         .map((n) => `- ${n.title}: ${n.content.slice(0, 200)}`)
@@ -124,7 +177,7 @@ function buildPrompt(
     ? `\n\nThey specifically requested: "${customRequest}"`
     : '';
 
-  return `Generate 7 personalized income/project ideas for this user.
+  return `Generate 7 highly specific, actionable income ideas for this user.
 
 USER PROFILE:
 - Self-description: ${selfDesc}
@@ -133,68 +186,113 @@ USER PROFILE:
 - Priorities: ${prioritiesDesc}
 - Skills/background: ${skillsDesc}
 ${expertiseDesc}
+${regionContext}
 ${notesContext}
 ${profileContext}
 ${customContext}
 
 CLASSIFIED PERSONA: ${persona}
 
-STRICT RULES:
+═══════════════════════════════════════════════════════════════
+QUALITY RULES - FOLLOW THESE EXACTLY:
+═══════════════════════════════════════════════════════════════
 
-1. Match their technical comfort level EXACTLY:
-   - If they said 'something simple' or didn't mention tech → NO coding projects, NO SaaS, NO APIs, NO technical ideas
-   - Only suggest technical ideas if they explicitly said they love technology/building
+1. BE HYPER-SPECIFIC, NOT GENERIC:
+   ❌ BAD: "Start a newsletter"
+   ✅ GOOD: "Weekly curated AI tools newsletter for non-technical marketing managers — monetize via sponsored tool features at €200-500/placement after 2,000 subscribers"
 
-2. Match their time budget:
-   - 'A few hours on weekends' → max 5 hrs/week ongoing
-   - 'Set it up once' → must be truly passive after setup
+   ❌ BAD: "Sell digital templates"
+   ✅ GOOD: "Notion dashboard templates for freelance consultants tracking clients, invoices, and projects — sell on Gumroad and Lemonsqueezy at €29-49, target 20 sales/month"
 
-3. Match their money budget:
-   - 'Zero' → only free-to-start ideas
-   - Include startup cost for each idea
+2. MAKE IT ACTIONABLE:
+   - Name SPECIFIC platforms (not just "online")
+   - Name SPECIFIC niches (not just "people")
+   - Include first 3 steps to start
+   - Mention specific tools needed
 
-4. Match their priorities:
-   - 'Making money quickly' → proven, fast-to-start ideas
-   - 'Helping others' → service/teaching oriented
-   - 'Flexibility' → location-independent, async
+3. REALISTIC INCOME ESTIMATES:
+   - Based on actual market rates, not hype
+   - Provide range: conservative to optimistic
+   - Include timeline: "Month 1-3: €0-200, Month 6+: €500-1500"
+   - Be honest about ramp-up time
 
-5. Use PLAIN LANGUAGE:
-   - No jargon
-   - Explain like they've never heard of this before
-   - If idea needs explanation, include it
+4. MATCH THEIR EXACT SITUATION:
+   "Few hours on weekends" + "Zero budget" + "Simple":
+   → Ideas must be startable THIS weekend with €0
+   → No "build an app" or "create a course" (too much upfront work)
+   → Focus: micro-services, quick digital products, local gigs
 
-6. Be REALISTIC:
-   - Income ranges should be honest (not hype)
-   - Time estimates should be accurate
-   - Don't overpromise
+   "Going all in" + "Has budget" + "Technical":
+   → Can suggest SaaS, more complex builds
+   → Can suggest paid tools, ads budget
+   → Longer timelines acceptable
 
-7. Make it PERSONAL:
-   - Reference their skills if mentioned
-   - Reference their field if mentioned
-   - 'Why this fits you' must be specific to their answers
+5. UNIQUE & NON-OBVIOUS:
+   AVOID these overused suggestions:
+   - Generic dropshipping
+   - "Start a podcast"
+   - "Become an influencer"
+   - "Amazon FBA" (oversaturated)
+   - Vague "consulting"
 
-Return ONLY valid JSON array (no markdown, no code blocks):
+   Instead find angles:
+   - Niche intersections (their skills + underserved market)
+   - Regional gaps (what works in US but doesn't exist in their region)
+   - Emerging platforms (less competition)
+   - B2B over B2C (higher value, less competition)
+
+6. TECHNICAL LEVEL MUST MATCH:
+   - If they said "something simple" → NO coding, NO SaaS, NO APIs
+   - Only suggest technical ideas if they explicitly love technology
+
+═══════════════════════════════════════════════════════════════
+OUTPUT FORMAT - RETURN ONLY VALID JSON:
+═══════════════════════════════════════════════════════════════
+
+Return ONLY a valid JSON array (no markdown, no code blocks, no explanation):
+
 [
   {
     "id": "unique-id-1",
-    "name": "Idea Name",
-    "description": "2-3 sentences explaining what this is and how it makes money",
-    "timeUpfront": "X hours/days",
-    "timeOngoing": "X hours/week",
+    "name": "Specific, Descriptive Name",
+    "oneLiner": "One sentence pitch of what this is",
+    "description": "3-4 sentences: what it is, who pays, why it works, what makes it unique",
+    "whyFitsYou": "Specific reference to their answers — not generic",
+    "region": "global",
+    "platforms": ["Specific platform 1", "Platform 2"],
+    "tools": ["Tool 1", "Tool 2"],
+    "firstSteps": [
+      "Today: [specific action they can do right now]",
+      "Week 1: [specific action for first week]",
+      "Month 1: [specific action for first month]"
+    ],
+    "timeUpfront": "X hours/days with specifics",
+    "timeOngoing": "X hours/week with what they actually do",
     "incomeMin": 500,
     "incomeMax": 2000,
-    "whyFitsYou": "Specific reason based on their answers",
-    "skillsNeeded": "Plain language or None - anyone can start",
-    "startupCost": "Free / $X-Y",
+    "incomeTimeline": {
+      "month1to3": "€0-200",
+      "month6": "€500-1500",
+      "month12": "€1000-3000"
+    },
+    "incomeModel": "How exactly money comes in (per sale, retainer, subscription, etc.)",
+    "competition": "low",
+    "skillsNeeded": "Specific skills or 'None — anyone can start'",
+    "startupCost": "€0 / €50-100 for X / €500+ for Y",
     "technicalLevel": "none",
-    "category": "passive"
+    "category": "product",
+    "risks": ["Risk 1", "Risk 2"],
+    "edgeForYou": "What specific advantage they have based on their profile"
   }
 ]
 
-technicalLevel must be one of: "none", "low", "medium", "high"
-category must be one of: "passive", "service", "product", "content", "technical"
+FIELD CONSTRAINTS:
+- technicalLevel: "none" | "low" | "medium" | "high"
+- category: "passive" | "service" | "product" | "content" | "technical"
+- competition: "low" | "medium" | "high"
+- region: "global" | "europe" | "scandinavia" | "us" | "uk"
 
-Generate exactly 7 diverse ideas that match this user's profile.`;
+Generate exactly 7 diverse, high-quality ideas that match this user's profile.`;
 }
 
 /**
