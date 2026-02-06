@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Brain, RefreshCw } from 'lucide-react';
 import { ProfileDisplay, ProfileEmptyState, ProfileSkeleton } from '@/components/profile';
 import { Button } from '@/components/ui/button';
-import { getThinkingProfile, checkProfileStatus, debugNoteCount } from '@/actions/profile.actions';
+import { getThinkingProfile, debugNoteCount } from '@/actions/profile.actions';
 import type { ThinkingProfile } from '@/lib/ai/thinking-profile';
 
 interface DebugInfo {
@@ -33,16 +33,17 @@ export default function ProfilePage(): React.ReactElement {
   const loadProfile = useCallback(async (): Promise<void> => {
     setState((prev) => ({ ...prev, loading: true }));
 
-    // Load profile, status, and debug info in parallel
-    const [profileResult, statusResult, debugResult] = await Promise.all([
+    // Load profile and debug info in parallel
+    // Using debugNoteCount as the primary source of truth for note count
+    const [profileResult, debugResult] = await Promise.all([
       getThinkingProfile(),
-      checkProfileStatus(),
       debugNoteCount(),
     ]);
 
     const profile = profileResult.success ? profileResult.data : null;
-    const noteCount = statusResult.success ? statusResult.data.noteCount : 0;
     const debugInfo = debugResult.success ? debugResult.data : null;
+    // Use debugInfo.noteCount as the source of truth since it's more reliable
+    const noteCount = debugInfo?.noteCount ?? 0;
 
     setState({ profile, noteCount, loading: false, debugInfo });
   }, []);
