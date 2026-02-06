@@ -1,3 +1,20 @@
+# ⚠️ MANDATORY PRE-FEATURE CHECKLIST
+
+Before implementing ANY feature, you MUST:
+
+1. Read VERIFICATION.md and confirm understanding of:
+   - Database schemas (encryption boundaries, RLS policies)
+   - Testing strategy (where to add tests, which mocks to use)
+   - Past decisions (check DECISIONS.md for rejected approaches)
+
+2. State out loud which items from VERIFICATION.md apply to this feature
+
+3. If anything is unclear, ask Noam before writing code
+
+This is not optional. Skip this = incorrect implementation.
+
+---
+
 # Claude Code Guidelines
 
 ## Build Commands
