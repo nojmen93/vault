@@ -107,14 +107,14 @@ export function ProjectKitGenerator({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mt-6 rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-blue-500/5 p-4"
+        className="mt-6 rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-600/5 p-4"
       >
         <button
           onClick={() => setIsExpanded(true)}
           className="w-full flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
               <Rocket className="h-5 w-5 text-white" />
             </div>
             <div className="text-left">
@@ -134,16 +134,16 @@ export function ProjectKitGenerator({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mt-6 rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-blue-500/5 overflow-hidden"
+      className="mt-6 rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-600/5 overflow-hidden"
     >
       {/* Header */}
-      <div className="p-4 border-b border-purple-500/20">
+      <div className="p-4 border-b border-amber-500/20">
         <button
           onClick={() => setIsExpanded(false)}
           className="w-full flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
               <Rocket className="h-5 w-5 text-white" />
             </div>
             <div className="text-left">
@@ -182,7 +182,7 @@ export function ProjectKitGenerator({
             <Button
               onClick={handleGenerate}
               disabled={isGenerating || !projectName.trim()}
-              className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
               size="lg"
             >
               {isGenerating ? (

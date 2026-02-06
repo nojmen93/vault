@@ -267,7 +267,7 @@ export function IdeaCloud({ notes }: IdeaCloudProps): React.ReactElement {
       {/* Layout toggle button */}
       <motion.button
         onClick={() => setIsGridMode(!isGridMode)}
-        className="absolute top-4 right-4 z-20 rounded-full bg-white/10 backdrop-blur-sm p-2.5 text-white/70 border border-white/10 hover:bg-white/20 hover:text-white transition-colors"
+        className="absolute top-4 right-4 z-20 rounded-full bg-white/10 backdrop-blur-sm p-2.5 text-white/70 border border-white/10 hover:bg-amber-600/30 hover:text-amber-300 hover:border-amber-500/30 transition-colors"
         title={isGridMode ? 'Switch to cloud view' : 'Organize in grid'}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}

@@ -169,7 +169,7 @@ export function IncubatorPanel({
       {/* Right panel - Analysis results */}
       <div className="flex flex-col rounded-xl border bg-card">
         <div className="flex items-center gap-2 border-b p-4">
-          <Sparkles className="h-5 w-5 text-purple-500" />
+          <Sparkles className="h-5 w-5 text-amber-500" />
           <h2 className="font-semibold">Analysis Results</h2>
         </div>
 
@@ -202,7 +202,7 @@ export function IncubatorPanel({
                         key={i}
                         className="flex items-start gap-2 text-sm rounded-lg bg-muted/50 p-3"
                       >
-                        <span className="shrink-0 mt-0.5 h-5 w-5 rounded-full bg-purple-100 text-purple-600 text-xs flex items-center justify-center font-medium dark:bg-purple-900/30 dark:text-purple-400">
+                        <span className="shrink-0 mt-0.5 h-5 w-5 rounded-full bg-amber-100 text-amber-600 text-xs flex items-center justify-center font-medium dark:bg-amber-900/30 dark:text-amber-400">
                           {i + 1}
                         </span>
                         <span>{connection}</span>
@@ -237,8 +237,8 @@ export function IncubatorPanel({
 
               {/* Personalized Insights */}
               {analysis.personalizedInsights && analysis.personalizedInsights.length > 0 && (
-                <div className="rounded-lg border border-purple-500/30 bg-purple-500/5 p-4">
-                  <h3 className="flex items-center gap-2 font-medium text-sm text-purple-600 dark:text-purple-400 mb-3">
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+                  <h3 className="flex items-center gap-2 font-medium text-sm text-amber-600 dark:text-amber-400 mb-3">
                     <Brain className="h-4 w-4" />
                     Personalized for You
                   </h3>
@@ -248,7 +248,7 @@ export function IncubatorPanel({
                         key={i}
                         className="flex items-start gap-2 text-sm"
                       >
-                        <span className="text-purple-500 mt-0.5">•</span>
+                        <span className="text-amber-500 mt-0.5">•</span>
                         <span>{insight}</span>
                       </li>
                     ))}

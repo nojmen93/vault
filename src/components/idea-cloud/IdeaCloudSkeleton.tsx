@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function IdeaCloudSkeleton(): React.ReactElement {
   return (
-    <div className="relative h-full w-full rounded-xl bg-gradient-to-br from-slate-50 via-purple-50/30 to-blue-50/30 dark:from-slate-900 dark:via-purple-900/10 dark:to-blue-900/10 overflow-hidden">
+    <div className="relative h-full w-full rounded-xl bg-gradient-to-br from-slate-50 via-amber-50/30 to-orange-50/30 dark:from-slate-900 dark:via-amber-900/10 dark:to-orange-900/10 overflow-hidden">
       {/* Floating bubble skeletons */}
       {[...Array(8)].map((_, i) => {
         // Generate pseudo-random positions

@@ -127,9 +127,9 @@ export function BrainVisualization({
 
   return (
     <div className={cn('relative w-full max-w-2xl mx-auto h-full', className)}>
-      {/* Ambient glow */}
+      {/* Ambient glow - amber */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-64 h-64 rounded-full bg-purple-500/10 blur-3xl animate-pulse" />
+        <div className="w-64 h-64 rounded-full bg-amber-500/10 blur-3xl animate-pulse" />
       </div>
 
       <svg
@@ -139,11 +139,11 @@ export function BrainVisualization({
         overflow="hidden"
       >
         <defs>
-          {/* Gradient for brain outline */}
+          {/* Gradient for brain outline - amber */}
           <linearGradient id="brainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgb(168, 85, 247)" stopOpacity="0.6" />
-            <stop offset="50%" stopColor="rgb(59, 130, 246)" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="rgb(168, 85, 247)" stopOpacity="0.6" />
+            <stop offset="0%" stopColor="rgb(217, 119, 6)" stopOpacity="0.6" />
+            <stop offset="50%" stopColor="rgb(245, 158, 11)" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="rgb(217, 119, 6)" stopOpacity="0.6" />
           </linearGradient>
 
           {/* Glow filter */}
@@ -196,7 +196,7 @@ export function BrainVisualization({
                 y1={fromNode.y}
                 x2={toNode.x}
                 y2={toNode.y}
-                stroke={isActive ? 'rgb(168, 85, 247)' : 'rgb(100, 100, 120)'}
+                stroke={isActive ? 'rgb(217, 119, 6)' : 'rgb(100, 100, 120)'}
                 strokeWidth={isActive ? 2 : 1}
                 strokeOpacity={isActive ? 0.8 : 0.3}
                 initial={{ pathLength: 0, opacity: 0 }}
@@ -235,11 +235,11 @@ export function BrainVisualization({
                   cx={node.x}
                   cy={node.y}
                   r={node.size}
-                  fill={isActive ? 'rgb(168, 85, 247)' : 'rgb(80, 80, 100)'}
+                  fill={isActive ? 'rgb(217, 119, 6)' : 'rgb(80, 80, 100)'}
                   filter={isActive ? 'url(#nodeGlow)' : undefined}
                   animate={{
                     r: isActive ? node.size * 1.3 : node.size,
-                    fill: isActive ? 'rgb(168, 85, 247)' : 'rgb(80, 80, 100)',
+                    fill: isActive ? 'rgb(217, 119, 6)' : 'rgb(80, 80, 100)',
                   }}
                   transition={{ duration: 0.3 }}
                 />
@@ -250,10 +250,10 @@ export function BrainVisualization({
                   y={node.y > 450 ? node.y - node.size - 8 : node.y + node.size + 14}
                   textAnchor="middle"
                   fontSize="10"
-                  fill={isActive ? 'rgb(200, 180, 255)' : 'rgb(150, 150, 160)'}
+                  fill={isActive ? 'rgb(253, 186, 116)' : 'rgb(150, 150, 160)'}
                   fontWeight={isActive ? '600' : '400'}
                   animate={{
-                    fill: isActive ? 'rgb(200, 180, 255)' : 'rgb(150, 150, 160)',
+                    fill: isActive ? 'rgb(253, 186, 116)' : 'rgb(150, 150, 160)',
                   }}
                   transition={{ duration: 0.3 }}
                 >
@@ -269,7 +269,7 @@ export function BrainVisualization({
           <motion.circle
             key={`particle-${i}`}
             r="2"
-            fill="rgb(168, 85, 247)"
+            fill="rgb(217, 119, 6)"
             fillOpacity="0.5"
             initial={{
               cx: 320,

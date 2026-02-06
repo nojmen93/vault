@@ -304,7 +304,7 @@ export function IdeaSuggestionCard({
                     {suggestion.tools?.map((tool) => (
                       <span
                         key={tool}
-                        className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-2 py-1 rounded-full flex items-center gap-1"
+                        className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-1 rounded-full flex items-center gap-1"
                       >
                         <Wrench className="h-3 w-3" />
                         {tool}

@@ -105,7 +105,7 @@ export function Sidebar({ notes = [] }: SidebarProps): React.ReactElement {
         {/* Logo */}
         <div className="p-4 border-b">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
               <span className="text-white font-bold text-sm">V</span>
             </div>
             <span className="font-semibold text-lg">Vault</span>
@@ -117,9 +117,9 @@ export function Sidebar({ notes = [] }: SidebarProps): React.ReactElement {
           <Button
             onClick={() => setShowDiscovery(true)}
             variant="outline"
-            className="w-full justify-start gap-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 hover:from-purple-500/20 hover:to-blue-500/20 border-purple-500/20"
+            className="w-full justify-start gap-2 bg-gradient-to-r from-amber-500/10 to-amber-600/10 hover:from-amber-500/20 hover:to-amber-600/20 border-amber-500/20"
           >
-            <Sparkles className="h-4 w-4 text-purple-500" />
+            <Sparkles className="h-4 w-4 text-amber-500" />
             Find an Idea
           </Button>
         </div>

@@ -90,7 +90,7 @@ export function ProfileEmptyState({
             onClick={handleGenerate}
             disabled={isPending}
             size="lg"
-            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+            className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
           >
             {isPending ? (
               <>
@@ -116,7 +116,7 @@ export function ProfileEmptyState({
           <div className="w-full max-w-xs">
             <div className="h-2 rounded-full bg-muted overflow-hidden mb-2">
               <motion.div
-                className="h-full bg-gradient-to-r from-purple-500 to-blue-500"
+                className="h-full bg-gradient-to-r from-amber-500 to-amber-600"
                 initial={{ width: 0 }}
                 animate={{ width: `${(noteCount / MIN_NOTES_REQUIRED) * 100}%` }}
                 transition={{ duration: 0.5, delay: 0.4 }}

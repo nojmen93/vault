@@ -199,7 +199,7 @@ export function IdeaBubble({
         backgroundColor: bgColor,
         willChange: 'transform',
         boxShadow: isDragging
-          ? '0 0 40px rgba(255, 255, 255, 0.2), 0 20px 40px rgba(0, 0, 0, 0.4)'
+          ? '0 0 40px rgba(217, 119, 6, 0.3), 0 20px 40px rgba(0, 0, 0, 0.4)'
           : '0 0 20px rgba(255, 255, 255, 0.05), 0 8px 24px rgba(0, 0, 0, 0.3)',
         zIndex: isDragging ? 100 : 'auto',
       }}
@@ -217,7 +217,7 @@ export function IdeaBubble({
       }}
       whileHover={!isMobile && !isDragging ? {
         scale: 1.05,
-        boxShadow: '0 0 50px rgba(255, 255, 255, 0.25), 0 12px 32px rgba(0, 0, 0, 0.4)',
+        boxShadow: '0 0 50px rgba(217, 119, 6, 0.4), 0 12px 32px rgba(0, 0, 0, 0.4)',
       } : undefined}
       transition={{
         opacity: { duration: 0.2 },

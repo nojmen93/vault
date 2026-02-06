@@ -61,8 +61,8 @@ export default function ProfilePage(): React.ReactElement {
       {/* Header */}
       <div className="flex-shrink-0 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
-            <Brain className="h-5 w-5 text-purple-500" />
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 flex items-center justify-center">
+            <Brain className="h-5 w-5 text-amber-500" />
           </div>
           <div>
             <h1 className="text-2xl font-bold">Thinking Profile</h1>

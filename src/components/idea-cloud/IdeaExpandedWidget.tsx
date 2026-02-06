@@ -135,7 +135,7 @@ export function IdeaExpandedWidget({
           top: `${Math.min(Math.max(position.y, 20), 70)}%`,
           boxShadow: `
             0 25px 50px -12px rgba(0, 0, 0, 0.25),
-            0 0 100px rgba(147, 51, 234, 0.1)
+            0 0 100px rgba(217, 119, 6, 0.1)
           `,
         }}
         initial={{
@@ -306,7 +306,7 @@ function WidgetContent({
 
           {/* Actions */}
           <div className="space-y-2">
-            <Button size="sm" className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600" onClick={onIncubate}>
+            <Button size="sm" className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" onClick={onIncubate}>
               <Sparkles className="mr-2 h-3.5 w-3.5" />
               Incubate This Idea
             </Button>
