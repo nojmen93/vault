@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Sparkles } from 'lucide-react';
+import { Plus, Sparkles, LayoutGrid, Cloud } from 'lucide-react';
 import { IdeaBubble } from './IdeaBubble';
 import { IdeaExpandedWidget } from './IdeaExpandedWidget';
 import { IdeaGrid } from './IdeaGrid';
@@ -33,6 +33,31 @@ function getRandomPosition(index: number): Position {
   return {
     x: Math.max(18, Math.min(82, x)),
     y: Math.max(18, Math.min(82, y)),
+  };
+}
+
+// Generate grid position based on index and container size
+function getGridPosition(index: number, total: number, containerWidth: number, containerHeight: number): Position {
+  // Calculate optimal columns based on container aspect ratio
+  const aspectRatio = containerWidth / containerHeight;
+  const cols = Math.max(2, Math.min(5, Math.ceil(Math.sqrt(total * aspectRatio))));
+  const rows = Math.ceil(total / cols);
+
+  const col = index % cols;
+  const row = Math.floor(index / cols);
+
+  // Calculate spacing with padding from edges
+  const paddingX = 15; // percentage from edges
+  const paddingY = 15;
+  const usableWidth = 100 - (paddingX * 2);
+  const usableHeight = 100 - (paddingY * 2);
+
+  const cellWidth = usableWidth / cols;
+  const cellHeight = usableHeight / rows;
+
+  return {
+    x: paddingX + (col * cellWidth) + (cellWidth / 2),
+    y: paddingY + (row * cellHeight) + (cellHeight / 2),
   };
 }
 
@@ -84,6 +109,7 @@ export function IdeaCloud({ notes }: IdeaCloudProps): React.ReactElement {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [containerSize, setContainerSize] = useState({ width: 800, height: 600 });
+  const [isGridMode, setIsGridMode] = useState(false);
 
   // Track container size for pixel calculations
   useEffect(() => {
@@ -238,12 +264,25 @@ export function IdeaCloud({ notes }: IdeaCloudProps): React.ReactElement {
         />
       </div>
 
+      {/* Layout toggle button */}
+      <motion.button
+        onClick={() => setIsGridMode(!isGridMode)}
+        className="absolute top-4 right-4 z-20 rounded-full bg-white/10 backdrop-blur-sm p-2.5 text-white/70 border border-white/10 hover:bg-white/20 hover:text-white transition-colors"
+        title={isGridMode ? 'Switch to cloud view' : 'Organize in grid'}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        {isGridMode ? <Cloud className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
+      </motion.button>
+
       {/* Floating bubbles */}
       <AnimatePresence>
         <div className="relative h-full w-full">
           {displayedNotes.map((note, index) => {
-            const defaultPos = getRandomPosition(index);
-            const position = getPosition(note.id, defaultPos);
+            // Use grid position when in grid mode, otherwise use saved/random position
+            const position = isGridMode
+              ? getGridPosition(index, displayedNotes.length, containerSize.width, containerSize.height)
+              : getPosition(note.id, getRandomPosition(index));
 
             return (
               <IdeaBubble
@@ -255,14 +294,14 @@ export function IdeaCloud({ notes }: IdeaCloudProps): React.ReactElement {
                 index={index}
                 total={displayedNotes.length}
                 position={position}
-                onPositionChange={handlePositionChange}
+                onPositionChange={isGridMode ? () => {} : handlePositionChange}
                 onExpand={handleExpand}
                 isOtherExpanded={expandedId !== null && expandedId !== note.id}
                 isHoveredOther={hoveredId !== null && hoveredId !== note.id}
                 onHoverStart={() => setHoveredId(note.id)}
                 onHoverEnd={() => setHoveredId(null)}
                 containerSize={containerSize}
-                isMobile={isMobile}
+                isMobile={isMobile || isGridMode}
               />
             );
           })}
