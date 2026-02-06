@@ -116,3 +116,42 @@ CREATE POLICY "Users can CRUD own project kits" ON project_kits
 -- Add GitHub access token to users (encrypted)
 ALTER TABLE users ADD COLUMN IF NOT EXISTS github_access_token TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS github_username TEXT;
+
+-- Discovery sessions (stores user's discovery answers and generated suggestions)
+CREATE TABLE discovery_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  answers JSONB NOT NULL,
+  persona TEXT,
+  suggestions JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index for discovery sessions
+CREATE INDEX discovery_sessions_user_idx ON discovery_sessions(user_id, created_at DESC);
+
+-- Row Level Security for discovery sessions
+ALTER TABLE discovery_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can CRUD own discovery sessions" ON discovery_sessions
+  FOR ALL USING (user_id = current_setting('app.current_user_id', true));
+
+-- Saved suggestions (ideas user wants to keep or has acted upon)
+CREATE TABLE saved_suggestions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  discovery_session_id UUID REFERENCES discovery_sessions(id) ON DELETE SET NULL,
+  suggestion JSONB NOT NULL,
+  status TEXT DEFAULT 'saved', -- 'saved', 'incubated', 'dismissed'
+  note_id UUID REFERENCES notes(id) ON DELETE SET NULL, -- if converted to note
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index for saved suggestions
+CREATE INDEX saved_suggestions_user_idx ON saved_suggestions(user_id, status, created_at DESC);
+
+-- Row Level Security for saved suggestions
+ALTER TABLE saved_suggestions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can CRUD own saved suggestions" ON saved_suggestions
+  FOR ALL USING (user_id = current_setting('app.current_user_id', true));

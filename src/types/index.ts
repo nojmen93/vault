@@ -25,3 +25,6 @@ export interface ActionError {
   message: string;
   code?: string;
 }
+
+// Re-export discovery types
+export * from './discovery';
