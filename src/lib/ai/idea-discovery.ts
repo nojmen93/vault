@@ -12,6 +12,21 @@ const anthropic = new Anthropic({
 });
 
 /**
+ * Strip markdown code blocks from a string
+ */
+function stripMarkdownCodeBlocks(text: string): string {
+  let cleaned = text.trim();
+
+  // Match ```json or ``` at start and ``` at end
+  const codeBlockMatch = cleaned.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?```$/);
+  if (codeBlockMatch) {
+    cleaned = codeBlockMatch[1].trim();
+  }
+
+  return cleaned;
+}
+
+/**
  * Classify user into a persona based on their answers
  */
 export function classifyPersona(answers: DiscoveryAnswers): PersonaType {
@@ -330,8 +345,16 @@ export async function generateIdeaSuggestions(
       throw new Error('Unexpected response type');
     }
 
-    // Parse the JSON response
-    const suggestions = JSON.parse(content.text) as IdeaSuggestion[];
+    // Strip any markdown code blocks and parse the JSON response
+    const cleanedText = stripMarkdownCodeBlocks(content.text);
+
+    let suggestions: IdeaSuggestion[];
+    try {
+      suggestions = JSON.parse(cleanedText) as IdeaSuggestion[];
+    } catch (parseError) {
+      console.error('Failed to parse idea suggestions:', content.text);
+      throw new Error('Failed to parse AI response as JSON');
+    }
 
     // Ensure all suggestions have unique IDs
     return suggestions.map((s, i) => ({

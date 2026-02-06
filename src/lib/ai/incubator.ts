@@ -11,6 +11,22 @@ export interface IncubatorResponse {
   personalizedInsights?: string[];
 }
 
+/**
+ * Strip markdown code blocks from a string
+ */
+function stripMarkdownCodeBlocks(text: string): string {
+  // Remove ```json ... ``` or ``` ... ``` blocks
+  let cleaned = text.trim();
+
+  // Match ```json or ``` at start and ``` at end
+  const codeBlockMatch = cleaned.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?```$/);
+  if (codeBlockMatch) {
+    cleaned = codeBlockMatch[1].trim();
+  }
+
+  return cleaned;
+}
+
 export async function analyzeIdeas(
   ideas: string[],
   profileContext?: string
@@ -34,10 +50,12 @@ Use this profile to personalize your analysis. Reference their expertise, call o
 Ideas:
 ${ideas.map((idea, i) => `${i + 1}. ${idea}`).join("\n")}
 
-Respond in JSON format with:
-- analysis: Overall analysis of the ideas
-- connections: Array of connections found between ideas
-- suggestions: Array of actionable suggestions${profileContext ? "\n- personalizedInsights: Array of insights specific to this user based on their profile (e.g., how ideas relate to their goals, blind spots to watch for)" : ""}`,
+Return ONLY valid JSON (no markdown, no code blocks, no explanation):
+{
+  "analysis": "Overall analysis of the ideas",
+  "connections": ["Connection 1", "Connection 2"],
+  "suggestions": ["Suggestion 1", "Suggestion 2"]${profileContext ? ',\n  "personalizedInsights": ["Insight based on user profile"]' : ""}
+}`,
       },
     ],
   });
@@ -47,5 +65,13 @@ Respond in JSON format with:
     throw new Error("Unexpected response type");
   }
 
-  return JSON.parse(content.text) as IncubatorResponse;
+  // Strip any markdown code blocks before parsing
+  const cleanedText = stripMarkdownCodeBlocks(content.text);
+
+  try {
+    return JSON.parse(cleanedText) as IncubatorResponse;
+  } catch (error) {
+    console.error("Failed to parse incubator response:", content.text);
+    throw new Error("Failed to parse AI response as JSON");
+  }
 }
