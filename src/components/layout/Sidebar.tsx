@@ -57,7 +57,7 @@ export function Sidebar({ notes = [] }: SidebarProps): React.ReactElement {
   };
 
   const handleNoteClick = (id: string): void => {
-    router.push(`/dashboard/notes/${id}`);
+    router.push(`/notes/${id}`);
   };
 
   return (
