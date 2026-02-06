@@ -3,22 +3,32 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Cloud, MessageSquare, Lightbulb, Brain, Settings, Sparkles } from "lucide-react";
+import { Cloud, Lightbulb, Brain, Settings, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { IdeaDiscoveryWizard } from "@/components/discovery";
+import { SidebarHistory } from "@/components/history";
 import { generateDiscoverySuggestions, saveSuggestion } from "@/actions/discovery.actions";
 import type { DiscoveryAnswers, IdeaSuggestion } from "@/types/discovery";
 
+interface HistoryNote {
+  id: string;
+  title: string | null;
+  createdAt: string;
+}
+
 const navItems = [
   { href: "/dashboard", label: "Idea Cloud", icon: Cloud, exact: true },
-  { href: "/dashboard/chat", label: "Idea Stream", icon: MessageSquare },
   { href: "/dashboard/incubator", label: "Incubator", icon: Lightbulb },
   { href: "/dashboard/profile", label: "Thinking Profile", icon: Brain },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
-export function Sidebar(): React.ReactElement {
+interface SidebarProps {
+  notes?: HistoryNote[];
+}
+
+export function Sidebar({ notes = [] }: SidebarProps): React.ReactElement {
   const pathname = usePathname();
   const router = useRouter();
   const [showDiscovery, setShowDiscovery] = useState(false);
@@ -44,6 +54,10 @@ export function Sidebar(): React.ReactElement {
   const handleSave = async (suggestion: IdeaSuggestion): Promise<void> => {
     await saveSuggestion(suggestion);
     // Could show a toast here
+  };
+
+  const handleNoteClick = (id: string): void => {
+    router.push(`/dashboard/notes/${id}`);
   };
 
   return (
@@ -96,6 +110,13 @@ export function Sidebar(): React.ReactElement {
             );
           })}
         </nav>
+
+        {/* Idea History */}
+        <SidebarHistory
+          notes={notes}
+          onNoteClick={handleNoteClick}
+          maxItems={5}
+        />
 
         {/* Footer hint */}
         <div className="p-4 border-t">
