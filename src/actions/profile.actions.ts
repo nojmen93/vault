@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/db";
 import {
   generateThinkingProfile,
+  generateProfileContext,
   shouldRegenerateProfile,
   type ThinkingProfile,
 } from "@/lib/ai/thinking-profile";
@@ -233,5 +234,37 @@ export async function checkProfileStatus(): Promise<
       success: false,
       error: { message: err instanceof Error ? err.message : "Check failed", code: "UNKNOWN" },
     };
+  }
+}
+
+/**
+ * Get the user's thinking profile context for AI prompts.
+ * This is a helper function for use by other server actions.
+ * Returns null if no profile exists or on error.
+ */
+export async function getProfileContextForAI(): Promise<string | null> {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("user_profiles")
+      .select("profile, note_count_at_generation")
+      .eq("user_id", userId)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    const profile = data.profile as ThinkingProfile;
+    profile.noteCount = data.note_count_at_generation;
+
+    return generateProfileContext(profile);
+  } catch {
+    return null;
   }
 }

@@ -79,7 +79,7 @@ Return ONLY valid JSON (no markdown, no code blocks, no explanation):
 
   try {
     return JSON.parse(cleanedText) as IncubatorResponse;
-  } catch (error) {
+  } catch {
     console.error("Failed to parse incubator response:", content.text);
     throw new Error("Failed to parse AI response as JSON");
   }

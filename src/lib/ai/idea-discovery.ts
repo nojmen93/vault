@@ -4,7 +4,6 @@ import type {
   IdeaSuggestion,
   PersonaType,
 } from '@/types/discovery';
-import type { ThinkingProfile } from './thinking-profile';
 import type { Note } from '@/types';
 
 const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -35,7 +34,7 @@ function stripMarkdownCodeBlocks(text: string): string {
  * Classify user into a persona based on their answers
  */
 export function classifyPersona(answers: DiscoveryAnswers): PersonaType {
-  const { selfDescription, timeAvailability, priorities } = answers;
+  const { selfDescription, timeAvailability } = answers;
 
   // Tech Builder
   if (
@@ -129,7 +128,7 @@ USER LOCATION NOT SPECIFIED:
 function buildPrompt(
   answers: DiscoveryAnswers,
   persona: PersonaType,
-  thinkingProfile?: ThinkingProfile | null,
+  profileContext?: string | null,
   relevantNotes?: Note[],
   customRequest?: string
 ): string {
@@ -189,8 +188,8 @@ function buildPrompt(
         .join('\n')}`
     : '';
 
-  const profileContext = thinkingProfile
-    ? `\n\nTheir thinking profile shows they are ${thinkingProfile.thinkingStyle} and value ${thinkingProfile.values?.join(', ') || 'not specified'}.`
+  const thinkingProfileSection = profileContext
+    ? `\n\n<user_thinking_profile>\n${profileContext}\n</user_thinking_profile>\n\nUse this thinking profile to personalize suggestions. Reference their strengths, challenge their blind spots, and tailor ideas to their communication and feedback preferences.`
     : '';
 
   const customContext = customRequest
@@ -208,7 +207,7 @@ USER PROFILE:
 ${expertiseDesc}
 ${regionContext}
 ${notesContext}
-${profileContext}
+${thinkingProfileSection}
 ${customContext}
 
 CLASSIFIED PERSONA: ${persona}
@@ -320,7 +319,7 @@ Generate exactly 7 diverse, high-quality ideas that match this user's profile.`;
  */
 export async function generateIdeaSuggestions(
   answers: DiscoveryAnswers,
-  thinkingProfile?: ThinkingProfile | null,
+  profileContext?: string | null,
   relevantNotes?: Note[],
   customRequest?: string
 ): Promise<IdeaSuggestion[]> {
@@ -332,7 +331,7 @@ export async function generateIdeaSuggestions(
   const prompt = buildPrompt(
     answers,
     persona,
-    thinkingProfile,
+    profileContext,
     relevantNotes,
     customRequest
   );
@@ -360,7 +359,7 @@ export async function generateIdeaSuggestions(
     let suggestions: IdeaSuggestion[];
     try {
       suggestions = JSON.parse(cleanedText) as IdeaSuggestion[];
-    } catch (parseError) {
+    } catch {
       console.error('Failed to parse idea suggestions:', content.text);
       throw new Error('Failed to parse AI response as JSON');
     }
@@ -411,7 +410,7 @@ export function detectIdeaExploration(content: string): boolean {
 export async function getMoreSuggestions(
   answers: DiscoveryAnswers,
   existingSuggestions: IdeaSuggestion[],
-  thinkingProfile?: ThinkingProfile | null,
+  profileContext?: string | null,
   relevantNotes?: Note[]
 ): Promise<IdeaSuggestion[]> {
   const existingNames = existingSuggestions.map((s) => s.name.toLowerCase());
@@ -421,7 +420,7 @@ export async function getMoreSuggestions(
 
   const suggestions = await generateIdeaSuggestions(
     answers,
-    thinkingProfile,
+    profileContext,
     relevantNotes,
     customRequest
   );

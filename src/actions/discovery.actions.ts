@@ -16,7 +16,7 @@ import type {
   SavedSuggestion,
   SavedSuggestionStatus,
 } from '@/types/discovery';
-import type { ThinkingProfile } from '@/lib/ai/thinking-profile';
+import { getProfileContextForAI } from './profile.actions';
 
 /**
  * Generate idea suggestions based on discovery answers
@@ -32,19 +32,13 @@ export async function generateDiscoverySuggestions(
   }
 
   try {
-    // Get user's thinking profile if exists
-    const { data: userData } = await supabaseAdmin
-      .from('users')
-      .select('thinking_profile')
-      .eq('id', userId)
-      .single();
-
-    const thinkingProfile = userData?.thinking_profile as ThinkingProfile | null;
+    // Get user's thinking profile context for AI
+    const profileContext = await getProfileContextForAI();
 
     // Generate suggestions
     const suggestions = await generateIdeaSuggestions(
       answers,
-      thinkingProfile,
+      profileContext,
       undefined, // relevantNotes - could fetch user's notes here
       customRequest
     );
@@ -88,19 +82,13 @@ export async function loadMoreSuggestions(
   }
 
   try {
-    // Get user's thinking profile if exists
-    const { data: userData } = await supabaseAdmin
-      .from('users')
-      .select('thinking_profile')
-      .eq('id', userId)
-      .single();
-
-    const thinkingProfile = userData?.thinking_profile as ThinkingProfile | null;
+    // Get user's thinking profile context for AI
+    const profileContext = await getProfileContextForAI();
 
     const suggestions = await getMoreSuggestions(
       answers,
       existingSuggestions,
-      thinkingProfile
+      profileContext
     );
 
     return { success: true, data: suggestions };

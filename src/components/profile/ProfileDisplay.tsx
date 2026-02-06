@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProfileRadarChart } from './ProfileRadarChart';
+import { BrainVisualization } from './BrainVisualization';
 import { generateAndSaveProfile, deleteProfile } from '@/actions/profile.actions';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -99,45 +100,46 @@ export function ProfileDisplay({
 
   return (
     <div className="space-y-6">
-      {/* Header with chart */}
-      <div className="grid md:grid-cols-2 gap-6 items-center">
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Your Thinking Profile</h2>
-          <p className="text-muted-foreground text-sm mb-4">
-            Built from analyzing {profile.noteCount} of your ideas
-          </p>
+      {/* Header with brain visualization */}
+      <div className="flex flex-col items-center text-center mb-8">
+        {/* Brain visualization */}
+        <BrainVisualization isActive={true} className="mb-4" />
 
-          {/* Quick stats */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="rounded-lg bg-muted/50 p-3 text-center">
-              <p className="text-2xl font-bold text-purple-500">{profile.domains.length}</p>
-              <p className="text-xs text-muted-foreground">Domains</p>
-            </div>
-            <div className="rounded-lg bg-muted/50 p-3 text-center">
-              <p className="text-2xl font-bold text-blue-500">{profile.skills.length}</p>
-              <p className="text-xs text-muted-foreground">Skills</p>
-            </div>
-            <div className="rounded-lg bg-muted/50 p-3 text-center">
-              <p className="text-2xl font-bold text-green-500">{profile.strengths.length}</p>
-              <p className="text-xs text-muted-foreground">Strengths</p>
-            </div>
+        <h2 className="text-2xl font-bold mb-2">Your Thinking Profile</h2>
+        <p className="text-muted-foreground text-sm mb-6">
+          Built from analyzing {profile.noteCount} of your ideas
+        </p>
+
+        {/* Quick stats */}
+        <div className="grid grid-cols-3 gap-4 w-full max-w-md mb-4">
+          <div className="rounded-lg bg-muted/50 p-3 text-center">
+            <p className="text-2xl font-bold text-purple-500">{profile.domains.length}</p>
+            <p className="text-xs text-muted-foreground">Domains</p>
           </div>
-
-          {/* Note count indicator */}
-          {noteCount > profile.noteCount && (
-            <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-lg px-3 py-2">
-              <Sparkles className="h-4 w-4" />
-              <span>
-                {noteCount - profile.noteCount} new ideas since last analysis - consider regenerating!
-              </span>
-            </div>
-          )}
+          <div className="rounded-lg bg-muted/50 p-3 text-center">
+            <p className="text-2xl font-bold text-blue-500">{profile.skills.length}</p>
+            <p className="text-xs text-muted-foreground">Skills</p>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3 text-center">
+            <p className="text-2xl font-bold text-green-500">{profile.strengths.length}</p>
+            <p className="text-xs text-muted-foreground">Strengths</p>
+          </div>
         </div>
 
-        {/* Radar chart */}
-        <div className="hidden md:block">
-          <ProfileRadarChart profile={profile} />
-        </div>
+        {/* Note count indicator */}
+        {noteCount > profile.noteCount && (
+          <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-lg px-3 py-2">
+            <Sparkles className="h-4 w-4" />
+            <span>
+              {noteCount - profile.noteCount} new ideas since last analysis - consider regenerating!
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Radar chart (optional - for detailed view) */}
+      <div className="mb-6">
+        <ProfileRadarChart profile={profile} />
       </div>
 
       {/* Background section */}

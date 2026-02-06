@@ -1,5 +1,4 @@
 import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
@@ -11,11 +10,14 @@ export async function GET(): Promise<Response> {
   const { userId } = await auth();
 
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.redirect(new URL("/sign-in", process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"));
   }
 
   if (!GITHUB_CLIENT_ID) {
-    return NextResponse.json({ error: "GitHub not configured" }, { status: 500 });
+    console.error("GITHUB_CLIENT_ID is not configured");
+    return NextResponse.redirect(
+      new URL("/dashboard/incubator?github_error=not_configured", process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
+    );
   }
 
   // Generate a state parameter for CSRF protection
@@ -30,5 +32,5 @@ export async function GET(): Promise<Response> {
 
   const githubAuthUrl = `https://github.com/login/oauth/authorize?${params.toString()}`;
 
-  redirect(githubAuthUrl);
+  return NextResponse.redirect(githubAuthUrl);
 }

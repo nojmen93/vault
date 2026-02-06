@@ -98,3 +98,47 @@ body {
 .animate-float {
   animation: float 4s ease-in-out infinite;
 }
+
+/* Brain visualization animations */
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+/* Brain path drawing animation */
+.brain-hidden {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+}
+
+.brain-drawn {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 3s ease-out;
+}
+
+/* Glow effect for brain */
+.drop-shadow-glow {
+  filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.4));
+}

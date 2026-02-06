@@ -1,3 +1,4 @@
+export { BrainVisualization } from './BrainVisualization';
 export { ProfileDisplay } from './ProfileDisplay';
 export { ProfileEmptyState } from './ProfileEmptyState';
 export { ProfileMilestoneNotifier } from './ProfileMilestoneNotifier';
