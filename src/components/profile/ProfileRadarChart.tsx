@@ -167,12 +167,12 @@ export function ProfileRadarChart({ profile }: ProfileRadarChartProps): React.Re
         {/* Gradients */}
         <defs>
           <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#8b5cf6" />
-            <stop offset="100%" stopColor="#3b82f6" />
+            <stop offset="0%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#d97706" />
           </linearGradient>
           <linearGradient id="gradientStroke" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#a78bfa" />
-            <stop offset="100%" stopColor="#60a5fa" />
+            <stop offset="0%" stopColor="#fbbf24" />
+            <stop offset="100%" stopColor="#f59e0b" />
           </linearGradient>
         </defs>
       </svg>
