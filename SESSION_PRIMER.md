@@ -5,7 +5,6 @@ Copy and paste this at the start of every Claude Code session.
 ---
 
 ## The Prompt
-
 ```
 You are working on Vault — a zero-knowledge idea incubator built with Next.js 15, Supabase, Clerk, Tailwind, and Shadcn/UI.
 
@@ -14,6 +13,7 @@ BEFORE STARTING:
 2. Read ARCHITECTURE.md for system design and data flow
 3. Read CLAUDE_CODE_WORKFLOW.md for Git workflow
 4. Check ROADMAP.md to understand current sprint priorities
+5. Review VERIFICATION.md checklist before starting any feature
 
 CODING RULES:
 - TypeScript strict mode, explicit return types
@@ -146,7 +146,6 @@ Before committing, verify:
 ## Customization
 
 Add project-specific context as needed:
-
 ```
 CURRENT TASK:
 Implement [feature name]
@@ -161,3 +160,12 @@ AVOID:
 RELATED DOCS:
 - [specific md file to reference]
 ```
+```
+
+---
+
+## What Changed
+
+Added line 5 in the "BEFORE STARTING" section:
+```
+5. Review VERIFICATION.md checklist before starting any feature
