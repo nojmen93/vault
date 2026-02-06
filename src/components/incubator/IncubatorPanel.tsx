@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Lightbulb, Sparkles, Loader2, ArrowRight, Link2, CheckCircle2, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,14 +11,39 @@ import type { IncubatorResponse } from '@/lib/ai/incubator';
 
 interface IncubatorPanelProps {
   notes: EncryptedNote[];
+  preSelectedNoteId?: string;
+  initialIdeaText?: string;
 }
 
-export function IncubatorPanel({ notes }: IncubatorPanelProps): React.ReactElement {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+export function IncubatorPanel({
+  notes,
+  preSelectedNoteId,
+  initialIdeaText
+}: IncubatorPanelProps): React.ReactElement {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => {
+    // Pre-select the note if provided
+    if (preSelectedNoteId) {
+      return new Set([preSelectedNoteId]);
+    }
+    return new Set();
+  });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<IncubatorResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [analyzedIdea, setAnalyzedIdea] = useState<string>('');
+  const [analyzedIdea, setAnalyzedIdea] = useState<string>(initialIdeaText || '');
+  const hasAutoAnalyzed = useRef(false);
+
+  // Auto-analyze when preSelectedNoteId is provided
+  useEffect(() => {
+    if (preSelectedNoteId && !hasAutoAnalyzed.current && notes.length > 0) {
+      hasAutoAnalyzed.current = true;
+      // Small delay to let the UI render first
+      const timer = setTimeout(() => {
+        handleAnalyze();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [preSelectedNoteId, notes.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleToggleSelect = (id: string): void => {
     const newSelected = new Set(selectedIds);

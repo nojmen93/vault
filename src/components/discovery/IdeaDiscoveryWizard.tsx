@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import { X, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DiscoveryProgress } from './DiscoveryProgress';
@@ -357,8 +358,20 @@ export function IdeaDiscoveryWizard({
   };
 
   const handleDismiss = (suggestion: IdeaSuggestion): void => {
-    // Could save to DB as dismissed
-    console.log('Dismissed:', suggestion.id);
+    // Remove from current suggestions
+    setSuggestions((prev) => prev.filter((s) => s.id !== suggestion.id));
+
+    // Show toast with undo option
+    toast('Idea dismissed', {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          // Restore the dismissed suggestion
+          setSuggestions((prev) => [...prev, suggestion]);
+        },
+      },
+      duration: 5000,
+    });
   };
 
   const renderStep = (): React.ReactElement => {

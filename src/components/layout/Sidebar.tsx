@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Cloud, Lightbulb, Brain, Settings, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { IdeaDiscoveryWizard } from "@/components/discovery";
 import { SidebarHistory } from "@/components/history";
 import { generateDiscoverySuggestions, saveSuggestion } from "@/actions/discovery.actions";
+import { quickCaptureNote } from "@/actions/notes.actions";
 import type { DiscoveryAnswers, IdeaSuggestion } from "@/types/discovery";
 
 interface HistoryNote {
@@ -44,16 +46,53 @@ export function Sidebar({ notes = [] }: SidebarProps): React.ReactElement {
     return result.data;
   };
 
-  const handleIncubate = (suggestion: IdeaSuggestion): void => {
-    // Navigate to incubator with the suggestion as a query param
-    const ideaText = `${suggestion.name}\n\n${suggestion.description}`;
-    router.push(`/dashboard/incubator?idea=${encodeURIComponent(ideaText)}`);
-    setShowDiscovery(false);
+  const handleIncubate = async (suggestion: IdeaSuggestion): Promise<void> => {
+    try {
+      // Build the content with all the rich details
+      const content = [
+        suggestion.oneLiner || '',
+        '',
+        suggestion.description,
+        '',
+        suggestion.firstSteps?.length ? `**First Steps:**\n${suggestion.firstSteps.map((s, i) => `${i + 1}. ${s}`).join('\n')}` : '',
+        '',
+        `**Why this fits you:** ${suggestion.whyFitsYou}`,
+        suggestion.edgeForYou ? `\n**Your edge:** ${suggestion.edgeForYou}` : '',
+      ].filter(Boolean).join('\n');
+
+      // Save as a note first
+      const result = await quickCaptureNote({
+        title: suggestion.name,
+        content,
+      });
+
+      if (result.success) {
+        // Navigate to incubator with the note ID
+        router.push(`/dashboard/incubator?noteId=${result.data.id}`);
+        setShowDiscovery(false);
+        toast.success('Idea saved and ready to incubate!');
+      } else {
+        toast.error('Failed to save idea');
+      }
+    } catch (error) {
+      console.error('Failed to incubate:', error);
+      toast.error('Failed to save idea');
+    }
   };
 
   const handleSave = async (suggestion: IdeaSuggestion): Promise<void> => {
-    await saveSuggestion(suggestion);
-    // Could show a toast here
+    try {
+      const result = await saveSuggestion(suggestion);
+      if (result.success) {
+        toast.success('Idea saved to your cloud!');
+        router.refresh();
+      } else {
+        toast.error('Failed to save idea');
+      }
+    } catch (error) {
+      console.error('Failed to save:', error);
+      toast.error('Failed to save idea');
+    }
   };
 
   const handleNoteClick = (id: string): void => {
