@@ -52,9 +52,24 @@ export async function generateDiscoverySuggestions(
     return { success: true, data: suggestions };
   } catch (error) {
     console.error('generateDiscoverySuggestions error:', error);
+
+    // Provide more specific error messages
+    let message = 'Failed to generate suggestions';
+    if (error instanceof Error) {
+      if (error.message.includes('API key')) {
+        message = 'API configuration error. Please check ANTHROPIC_API_KEY.';
+      } else if (error.message.includes('rate limit')) {
+        message = 'Rate limited. Please try again in a moment.';
+      } else if (error.message.includes('parse')) {
+        message = 'Failed to parse AI response. Please try again.';
+      } else {
+        message = error.message;
+      }
+    }
+
     return {
       success: false,
-      error: { message: 'Failed to generate suggestions', code: 'AI_ERROR' },
+      error: { message, code: 'AI_ERROR' },
     };
   }
 }

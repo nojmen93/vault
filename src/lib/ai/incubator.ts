@@ -1,7 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
 
+const apiKey = process.env.ANTHROPIC_API_KEY;
+if (!apiKey) {
+  console.warn('ANTHROPIC_API_KEY is not set');
+}
+
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+  apiKey: apiKey || '',
 });
 
 export interface IncubatorResponse {
@@ -31,6 +36,10 @@ export async function analyzeIdeas(
   ideas: string[],
   profileContext?: string
 ): Promise<IncubatorResponse> {
+  if (!apiKey) {
+    throw new Error('ANTHROPIC_API_KEY is not configured. Please add it to your .env.local file.');
+  }
+
   const profileSection = profileContext
     ? `\n\n<user_profile>
 ${profileContext}

@@ -7,8 +7,13 @@ import type {
 import type { ThinkingProfile } from './thinking-profile';
 import type { Note } from '@/types';
 
+const apiKey = process.env.ANTHROPIC_API_KEY;
+if (!apiKey) {
+  console.warn('ANTHROPIC_API_KEY is not set');
+}
+
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+  apiKey: apiKey || '',
 });
 
 /**
@@ -319,6 +324,10 @@ export async function generateIdeaSuggestions(
   relevantNotes?: Note[],
   customRequest?: string
 ): Promise<IdeaSuggestion[]> {
+  if (!apiKey) {
+    throw new Error('ANTHROPIC_API_KEY is not configured. Please add it to your .env.local file.');
+  }
+
   const persona = classifyPersona(answers);
   const prompt = buildPrompt(
     answers,
