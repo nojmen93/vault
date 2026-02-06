@@ -125,7 +125,7 @@ export function BrainVisualization({
   }, [nodes]);
 
   return (
-    <div className={cn('relative w-full max-w-2xl mx-auto', className)}>
+    <div className={cn('relative w-full max-w-2xl mx-auto h-full', className)}>
       {/* Ambient glow */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-64 h-64 rounded-full bg-purple-500/10 blur-3xl animate-pulse" />
@@ -133,8 +133,8 @@ export function BrainVisualization({
 
       <svg
         viewBox="0 0 640 560"
-        className="w-full h-auto"
-        style={{ minHeight: '400px' }}
+        className="w-full h-full"
+        preserveAspectRatio="xMidYMid meet"
       >
         <defs>
           {/* Gradient for brain outline */}

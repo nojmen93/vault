@@ -12,7 +12,7 @@ async function DashboardContent(): Promise<React.ReactElement> {
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex-shrink-0 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Your Ideas</h1>
           <p className="text-sm text-muted-foreground">
@@ -22,7 +22,7 @@ async function DashboardContent(): Promise<React.ReactElement> {
       </div>
 
       {/* Idea Cloud */}
-      <div className="flex-1 min-h-[500px]">
+      <div className="flex-1 min-h-0">
         <IdeaCloud notes={notes} />
       </div>
     </>
@@ -33,7 +33,7 @@ function DashboardSkeleton(): React.ReactElement {
   return (
     <>
       {/* Header skeleton */}
-      <div className="flex items-center justify-between">
+      <div className="flex-shrink-0 flex items-center justify-between">
         <div>
           <Skeleton className="h-8 w-32 mb-2" />
           <Skeleton className="h-4 w-40" />
@@ -41,7 +41,7 @@ function DashboardSkeleton(): React.ReactElement {
       </div>
 
       {/* Idea Cloud skeleton */}
-      <div className="flex-1 min-h-[500px]">
+      <div className="flex-1 min-h-0">
         <IdeaCloudSkeleton />
       </div>
     </>
@@ -56,7 +56,7 @@ export default async function DashboardPage(): Promise<React.ReactElement> {
   }
 
   return (
-    <div className="flex h-full flex-col gap-4">
+    <div className="flex h-full flex-col gap-4 overflow-hidden">
       <Suspense fallback={<DashboardSkeleton />}>
         <DashboardContent />
       </Suspense>

@@ -48,12 +48,12 @@ export function ProfileEmptyState({
   };
 
   return (
-    <div className="flex flex-col items-center text-center">
+    <div className="flex flex-col items-center justify-center text-center h-full">
       {/* Brain Visualization - always show */}
-      <div className="w-full max-w-2xl mb-6">
+      <div className="w-full max-w-2xl mb-4 flex-shrink-0" style={{ maxHeight: '50vh' }}>
         <BrainVisualization
           keywords={canGenerate ? [] : PLACEHOLDER_KEYWORDS}
-          className="opacity-60"
+          className="opacity-60 h-full"
         />
       </div>
 

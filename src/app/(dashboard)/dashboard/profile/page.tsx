@@ -57,9 +57,9 @@ export default function ProfilePage(): React.ReactElement {
   };
 
   return (
-    <div className="flex h-full flex-col gap-4">
+    <div className="flex h-full flex-col gap-4 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex-shrink-0 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
             <Brain className="h-5 w-5 text-purple-500" />
@@ -93,7 +93,7 @@ export default function ProfilePage(): React.ReactElement {
 
       {/* Debug Info */}
       {showDebug && state.debugInfo && (
-        <div className="rounded-lg border bg-muted/50 p-4 text-xs font-mono">
+        <div className="flex-shrink-0 rounded-lg border bg-muted/50 p-4 text-xs font-mono">
           <p><strong>User ID:</strong> {state.debugInfo.userId}</p>
           <p><strong>User Exists in DB:</strong> {state.debugInfo.userExists ? 'Yes' : 'No'}</p>
           <p><strong>Note Count:</strong> {state.debugInfo.noteCount}</p>
@@ -113,7 +113,7 @@ export default function ProfilePage(): React.ReactElement {
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 min-h-0 overflow-hidden">
         {state.loading ? (
           <ProfileSkeleton />
         ) : state.profile ? (
