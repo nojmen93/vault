@@ -119,6 +119,17 @@
 6. Return repo URL to user
 ```
 
+### Idea Discovery
+
+```
+1. User clicks "Find an Idea" or triggers via empty state
+2. Wizard asks 5 optional profiling questions
+3. System classifies user into persona (tech_builder, creative_maker, etc.)
+4. Claude generates 7 personalized idea suggestions
+5. User can filter, save, incubate, or request more ideas
+6. Saved ideas can be incubated for full analysis
+```
+
 ## Directory Structure
 
 ```
@@ -146,6 +157,12 @@ src/
 │   │   ├── FilePreview.tsx
 │   │   ├── PromptCopyButtons.tsx
 │   │   └── TechStackSelector.tsx
+│   ├── discovery/            # Idea discovery wizard
+│   │   ├── IdeaDiscoveryWizard.tsx
+│   │   ├── DiscoveryQuestion.tsx
+│   │   ├── DiscoveryResults.tsx
+│   │   ├── IdeaSuggestionCard.tsx
+│   │   └── DiscoveryEmptyState.tsx
 │   ├── github/               # GitHub integration
 │   │   └── GitHubConnect.tsx
 │   └── layout/               # Layout components
@@ -156,7 +173,8 @@ src/
 │   │   ├── embeddings.ts     # OpenAI embeddings
 │   │   ├── incubator.ts      # Claude analysis
 │   │   ├── thinking-profile.ts # Personal profile gen
-│   │   └── kit-generator.ts  # Project kit generation
+│   │   ├── kit-generator.ts  # Project kit generation
+│   │   └── idea-discovery.ts # Idea suggestion generation
 │   ├── github/               # GitHub utilities
 │   │   └── create-repo.ts    # Repo creation via API
 │   └── templates/            # Gold standard templates
@@ -169,7 +187,8 @@ src/
 │   ├── incubator.actions.ts  # Incubator analysis
 │   ├── profile.actions.ts    # Thinking profile
 │   ├── kit.actions.ts        # Project kit CRUD
-│   └── github.actions.ts     # GitHub operations
+│   ├── github.actions.ts     # GitHub operations
+│   └── discovery.actions.ts  # Idea discovery
 ├── types/                    # Shared TypeScript types
 └── __tests__/                # Test files
     ├── mocks/                # Mock implementations
@@ -219,6 +238,27 @@ project_kits (
   created_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ
 )
+
+-- Discovery Sessions
+discovery_sessions (
+  id UUID PRIMARY KEY,
+  user_id TEXT REFERENCES users,
+  answers JSONB NOT NULL,       -- User's profiling answers
+  persona TEXT,                 -- Classified persona type
+  suggestions JSONB NOT NULL,   -- Generated ideas
+  created_at TIMESTAMPTZ
+)
+
+-- Saved Suggestions
+saved_suggestions (
+  id UUID PRIMARY KEY,
+  user_id TEXT REFERENCES users,
+  discovery_session_id UUID REFERENCES discovery_sessions,
+  suggestion JSONB NOT NULL,    -- The idea suggestion
+  status TEXT DEFAULT 'saved',  -- saved, incubated, dismissed
+  note_id UUID REFERENCES notes,-- If converted to note
+  created_at TIMESTAMPTZ
+)
 ```
 
 ## Key Design Decisions
@@ -231,3 +271,5 @@ project_kits (
 6. **Gold standard templates**: Real documentation used as examples for AI generation
 7. **Parallel generation**: Kit files generated in parallel for performance
 8. **GitHub Git Data API**: Single commit with multiple files via tree/blob API
+9. **Persona classification**: Users classified into personas for better AI suggestions
+10. **Plain language AI**: Discovery prompts avoid jargon for non-technical users

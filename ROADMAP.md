@@ -85,7 +85,20 @@
 - [x] E2E tests for user flows
 - [x] 80+ tests passing
 
-## Sprint 7: Polish & Launch (Current)
+## Sprint 7: Idea Discovery ✅
+
+**Goal**: Help any user find the right idea for them
+
+- [x] Create discovery wizard UI (5 questions)
+- [x] Implement smart profiling (personas)
+- [x] Build AI-powered idea generation
+- [x] Create suggestion cards with metrics
+- [x] Add filtering (effort, income, skills)
+- [x] Integrate into sidebar ("Find an Idea" button)
+- [x] Add database tables for sessions/saved suggestions
+- [x] Support custom idea requests
+
+## Sprint 8: Polish & Launch (Current)
 
 **Goal**: Production readiness
 
