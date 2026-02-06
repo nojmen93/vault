@@ -24,48 +24,49 @@ interface BrainVisualizationProps {
   className?: string;
 }
 
-// Brain outline path
+// Brain outline path - centered in viewBox with padding
 const BRAIN_PATH = `
-  M 250 40
-  C 180 40 120 80 120 140
-  C 120 155 125 170 135 185
-  C 100 200 70 240 70 290
-  C 70 350 110 400 170 420
-  C 175 450 200 480 240 490
-  C 260 510 290 520 320 520
-  C 350 520 380 510 400 490
-  C 440 480 465 450 470 420
-  C 530 400 570 350 570 290
-  C 570 240 540 200 505 185
-  C 515 170 520 155 520 140
-  C 520 80 460 40 390 40
-  C 360 40 335 50 320 65
-  C 305 50 280 40 250 40
+  M 250 60
+  C 180 60 120 100 120 160
+  C 120 175 125 190 135 205
+  C 100 220 70 260 70 310
+  C 70 370 110 420 170 440
+  C 175 470 200 500 240 510
+  C 260 530 290 540 320 540
+  C 350 540 380 530 400 510
+  C 440 500 465 470 470 440
+  C 530 420 570 370 570 310
+  C 570 260 540 220 505 205
+  C 515 190 520 175 520 160
+  C 520 100 460 60 390 60
+  C 360 60 335 70 320 85
+  C 305 70 280 60 250 60
 `;
 
-// Generate nodes positioned inside the brain
+// Generate nodes positioned inside the brain (well within bounds)
 function generateNodes(keywords: string[]): BrainNode[] {
+  // Positions carefully chosen to stay within brain outline with room for labels
   const positions = [
-    { x: 200, y: 180 },
-    { x: 320, y: 150 },
-    { x: 440, y: 180 },
-    { x: 160, y: 280 },
-    { x: 280, y: 250 },
-    { x: 400, y: 280 },
-    { x: 480, y: 260 },
-    { x: 220, y: 350 },
-    { x: 350, y: 320 },
-    { x: 420, y: 380 },
-    { x: 280, y: 420 },
-    { x: 380, y: 450 },
+    { x: 220, y: 180 },
+    { x: 320, y: 160 },
+    { x: 420, y: 180 },
+    { x: 180, y: 280 },
+    { x: 280, y: 260 },
+    { x: 380, y: 280 },
+    { x: 460, y: 270 },
+    { x: 230, y: 360 },
+    { x: 340, y: 340 },
+    { x: 410, y: 380 },
+    { x: 290, y: 420 },
+    { x: 370, y: 440 },
   ];
 
   return keywords.slice(0, 12).map((keyword, i) => ({
     id: `node-${i}`,
-    label: keyword.length > 12 ? keyword.slice(0, 10) + '...' : keyword,
-    x: positions[i]?.x || 320 + (Math.random() - 0.5) * 200,
-    y: positions[i]?.y || 300 + (Math.random() - 0.5) * 200,
-    size: 8 + Math.random() * 6,
+    label: keyword.length > 10 ? keyword.slice(0, 8) + '...' : keyword,
+    x: positions[i]?.x || 320,
+    y: positions[i]?.y || 300,
+    size: 6 + Math.random() * 4,
     delay: i * 0.15,
   }));
 }
@@ -132,9 +133,10 @@ export function BrainVisualization({
       </div>
 
       <svg
-        viewBox="0 0 640 560"
+        viewBox="0 0 640 600"
         className="w-full h-full"
         preserveAspectRatio="xMidYMid meet"
+        overflow="hidden"
       >
         <defs>
           {/* Gradient for brain outline */}
@@ -242,12 +244,12 @@ export function BrainVisualization({
                   transition={{ duration: 0.3 }}
                 />
 
-                {/* Node label */}
+                {/* Node label - position above if near bottom */}
                 <motion.text
                   x={node.x}
-                  y={node.y + node.size + 16}
+                  y={node.y > 450 ? node.y - node.size - 8 : node.y + node.size + 14}
                   textAnchor="middle"
-                  fontSize="11"
+                  fontSize="10"
                   fill={isActive ? 'rgb(200, 180, 255)' : 'rgb(150, 150, 160)'}
                   fontWeight={isActive ? '600' : '400'}
                   animate={{
@@ -262,26 +264,26 @@ export function BrainVisualization({
           })}
         </AnimatePresence>
 
-        {/* Floating particles */}
-        {isVisible && [...Array(8)].map((_, i) => (
+        {/* Floating particles - contained within brain area */}
+        {isVisible && [...Array(6)].map((_, i) => (
           <motion.circle
             key={`particle-${i}`}
             r="2"
             fill="rgb(168, 85, 247)"
-            fillOpacity="0.6"
+            fillOpacity="0.5"
             initial={{
               cx: 320,
-              cy: 280,
+              cy: 300,
               opacity: 0
             }}
             animate={{
-              cx: [320, 200 + Math.random() * 240, 320],
-              cy: [280, 150 + Math.random() * 300, 280],
-              opacity: [0, 0.6, 0],
+              cx: [320, 180 + (i * 40), 320],
+              cy: [300, 180 + (i * 50), 300],
+              opacity: [0, 0.5, 0],
             }}
             transition={{
-              duration: 4 + Math.random() * 2,
-              delay: 2 + i * 0.5,
+              duration: 5 + i * 0.5,
+              delay: 2 + i * 0.8,
               repeat: Infinity,
               ease: 'easeInOut',
             }}

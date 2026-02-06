@@ -19,33 +19,34 @@ interface IdeaCloudProps {
   notes: EncryptedNote[];
 }
 
-// Generate random position for first load
+// Generate random position for first load - stay well within bounds
 function getRandomPosition(index: number): Position {
   // Use golden angle for nice distribution
   const seed = index * 137.5;
-  const radius = 20 + (index % 5) * 10;
+  const radius = 12 + (index % 4) * 8; // Smaller radius to keep closer to center
   const angle = (seed % 360) * (Math.PI / 180);
   const centerX = 50;
   const centerY = 50;
   const x = centerX + radius * Math.cos(angle);
   const y = centerY + radius * Math.sin(angle);
+  // Keep bubbles well within bounds (18-82% range accounts for bubble size)
   return {
-    x: Math.max(15, Math.min(85, x)),
-    y: Math.max(15, Math.min(85, y)),
+    x: Math.max(18, Math.min(82, x)),
+    y: Math.max(18, Math.min(82, y)),
   };
 }
 
-// Placeholder bubble for empty state
+// Placeholder bubble for empty state - positioned within safe area
 function PlaceholderBubble({ index, delay }: { index: number; delay: number }): React.ReactElement {
   const positions = [
-    { x: 30, y: 35 },
-    { x: 70, y: 40 },
-    { x: 50, y: 60 },
-    { x: 25, y: 55 },
-    { x: 75, y: 30 },
+    { x: 35, y: 35 },
+    { x: 65, y: 38 },
+    { x: 50, y: 55 },
+    { x: 30, y: 52 },
+    { x: 68, y: 58 },
   ];
   const pos = positions[index % positions.length];
-  const size = 60 + (index % 3) * 15;
+  const size = 50 + (index % 3) * 12;
   const grayShade = 0.15 + (index % 3) * 0.05;
 
   return (
