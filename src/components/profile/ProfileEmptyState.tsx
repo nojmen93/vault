@@ -2,10 +2,12 @@
 
 import { useState, useTransition } from 'react';
 import { motion } from 'framer-motion';
-import { Brain, Sparkles, RefreshCw, Lightbulb, Target, Zap } from 'lucide-react';
+import { Sparkles, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { BrainVisualization } from './BrainVisualization';
 import { generateAndSaveProfile } from '@/actions/profile.actions';
 import { toast } from 'sonner';
+import { useQuickCapture } from '@/components/quick-capture/QuickCaptureProvider';
 
 interface ProfileEmptyStateProps {
   noteCount: number;
@@ -14,11 +16,22 @@ interface ProfileEmptyStateProps {
 
 const MIN_NOTES_REQUIRED = 5;
 
+// Placeholder keywords for empty state brain
+const PLACEHOLDER_KEYWORDS = [
+  'ideas',
+  'thoughts',
+  'creativity',
+  'insights',
+  'patterns',
+  'growth',
+];
+
 export function ProfileEmptyState({
   noteCount,
   onProfileGenerated,
 }: ProfileEmptyStateProps): React.ReactElement {
   const [isPending, startTransition] = useTransition();
+  const { open: openQuickCapture } = useQuickCapture();
   const canGenerate = noteCount >= MIN_NOTES_REQUIRED;
   const notesNeeded = MIN_NOTES_REQUIRED - noteCount;
 
@@ -35,25 +48,14 @@ export function ProfileEmptyState({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] text-center px-4">
-      {/* Animated icon */}
-      <motion.div
-        className="relative mb-6"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="h-24 w-24 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
-          <Brain className="h-12 w-12 text-purple-500" />
-        </div>
-        <motion.div
-          className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center"
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <Sparkles className="h-4 w-4 text-white" />
-        </motion.div>
-      </motion.div>
+    <div className="flex flex-col items-center text-center">
+      {/* Brain Visualization - always show */}
+      <div className="w-full max-w-2xl mb-6">
+        <BrainVisualization
+          keywords={canGenerate ? [] : PLACEHOLDER_KEYWORDS}
+          className="opacity-60"
+        />
+      </div>
 
       {/* Title */}
       <motion.h2
@@ -62,7 +64,7 @@ export function ProfileEmptyState({
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        Build Your Thinking Profile
+        {canGenerate ? 'Ready to Generate!' : 'Build Your Thinking Profile'}
       </motion.h2>
 
       {/* Description */}
@@ -105,48 +107,42 @@ export function ProfileEmptyState({
         </motion.div>
       ) : (
         <motion.div
-          className="w-full max-w-xs"
+          className="flex flex-col items-center gap-4"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="h-2 rounded-full bg-muted overflow-hidden mb-2">
-            <motion.div
-              className="h-full bg-gradient-to-r from-purple-500 to-blue-500"
-              initial={{ width: 0 }}
-              animate={{ width: `${(noteCount / MIN_NOTES_REQUIRED) * 100}%` }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            />
+          {/* Progress bar */}
+          <div className="w-full max-w-xs">
+            <div className="h-2 rounded-full bg-muted overflow-hidden mb-2">
+              <motion.div
+                className="h-full bg-gradient-to-r from-purple-500 to-blue-500"
+                initial={{ width: 0 }}
+                animate={{ width: `${(noteCount / MIN_NOTES_REQUIRED) * 100}%` }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {noteCount} of {MIN_NOTES_REQUIRED} ideas captured
+            </p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {noteCount} of {MIN_NOTES_REQUIRED} ideas captured
+
+          {/* Quick capture button */}
+          <Button
+            onClick={openQuickCapture}
+            variant="outline"
+            size="sm"
+            className="mt-2"
+          >
+            <Sparkles className="mr-2 h-4 w-4" />
+            Capture an Idea
+          </Button>
+
+          <p className="text-xs text-muted-foreground">
+            or press <kbd className="px-1.5 py-0.5 rounded bg-muted text-xs">Ctrl+K</kbd> anywhere
           </p>
         </motion.div>
       )}
-
-      {/* Features preview */}
-      <motion.div
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-10 w-full max-w-2xl"
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.5 }}
-      >
-        <FeatureCard
-          icon={<Lightbulb className="h-5 w-5 text-amber-500" />}
-          title="Know Your Patterns"
-          description="Discover recurring themes and blind spots in your thinking"
-        />
-        <FeatureCard
-          icon={<Target className="h-5 w-5 text-green-500" />}
-          title="Personalized AI"
-          description="Get advice tailored to your style and expertise"
-        />
-        <FeatureCard
-          icon={<Zap className="h-5 w-5 text-blue-500" />}
-          title="Better Feedback"
-          description="Receive analysis that respects your preferences"
-        />
-      </motion.div>
     </div>
   );
 }

@@ -244,6 +244,75 @@ export async function checkProfileStatus(): Promise<
 }
 
 /**
+ * Debug function to diagnose note counting issues.
+ * Returns diagnostic information about the user and their notes.
+ */
+export async function debugNoteCount(): Promise<
+  Result<{
+    userId: string;
+    userExists: boolean;
+    noteCount: number;
+    recentNotes: { id: string; title: string | null; createdAt: string }[];
+  }, ActionError>
+> {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return { success: false, error: { message: "Unauthorized", code: "UNAUTHORIZED" } };
+  }
+
+  try {
+    // Check if user exists in users table
+    const { data: userData, error: userError } = await supabaseAdmin
+      .from("users")
+      .select("id, email")
+      .eq("id", userId)
+      .single();
+
+    console.log("[debugNoteCount] userId:", userId);
+    console.log("[debugNoteCount] userExists:", !!userData, "error:", userError);
+
+    // Get note count
+    const { count, error: countError } = await supabaseAdmin
+      .from("notes")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
+
+    console.log("[debugNoteCount] noteCount:", count, "error:", countError);
+
+    // Get recent notes
+    const { data: notes, error: notesError } = await supabaseAdmin
+      .from("notes")
+      .select("id, title, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    console.log("[debugNoteCount] recentNotes:", notes?.length || 0, "error:", notesError);
+
+    return {
+      success: true,
+      data: {
+        userId,
+        userExists: !!userData && !userError,
+        noteCount: count || 0,
+        recentNotes: (notes || []).map(n => ({
+          id: n.id,
+          title: n.title,
+          createdAt: n.created_at,
+        })),
+      },
+    };
+  } catch (err) {
+    console.error("[debugNoteCount] error:", err);
+    return {
+      success: false,
+      error: { message: err instanceof Error ? err.message : "Debug failed", code: "UNKNOWN" },
+    };
+  }
+}
+
+/**
  * Get the user's thinking profile context for AI prompts.
  * This is a helper function for use by other server actions.
  * Returns null if no profile exists or on error.
