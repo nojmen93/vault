@@ -9,16 +9,27 @@ import type { Result, ActionError, EncryptedNote } from "@/types";
 // Ensure user exists in Supabase (sync from Clerk)
 async function ensureUserExists(userId: string): Promise<void> {
   const user = await currentUser();
-  if (!user) return;
+  if (!user) {
+    console.warn("[ensureUserExists] No current user found");
+    return;
+  }
 
   const email = user.emailAddresses[0]?.emailAddress || "";
 
-  await supabaseAdmin
+  console.log("[ensureUserExists] Syncing user:", userId, email);
+
+  const { error } = await supabaseAdmin
     .from("users")
     .upsert(
       { id: userId, email },
       { onConflict: "id" }
     );
+
+  if (error) {
+    console.error("[ensureUserExists] Failed to upsert user:", error);
+  } else {
+    console.log("[ensureUserExists] User synced successfully");
+  }
 }
 
 export async function createNote(
@@ -40,6 +51,9 @@ export async function createNote(
   }
 
   try {
+    // Ensure user exists in Supabase (sync from Clerk)
+    await ensureUserExists(userId);
+
     const embedding = plainTextForEmbedding
       ? await generateEmbedding(plainTextForEmbedding)
       : null;
@@ -57,10 +71,15 @@ export async function createNote(
       .single();
 
     if (error) {
+      console.error("[createNote] Supabase insert error:", error);
       return { success: false, error: { message: error.message, code: "DB_ERROR" } };
     }
 
+    console.log("[createNote] Note created successfully, id:", data.id);
+
     revalidatePath("/notes");
+    revalidatePath("/dashboard/notes");
+    revalidatePath("/dashboard/profile");
 
     return {
       success: true,
@@ -75,6 +94,7 @@ export async function createNote(
       },
     };
   } catch (err) {
+    console.error("[createNote] error:", err);
     return {
       success: false,
       error: { message: err instanceof Error ? err.message : "Unknown error", code: "UNKNOWN" },
@@ -186,13 +206,19 @@ export async function getNotes(): Promise<Result<EncryptedNote[], ActionError>> 
   }
 
   try {
+    // Ensure user exists in Supabase
+    await ensureUserExists(userId);
+
     const { data, error } = await supabaseAdmin
       .from("notes")
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
+    console.log("[getNotes] userId:", userId, "found:", data?.length || 0, "notes");
+
     if (error) {
+      console.error("[getNotes] error:", error);
       return { success: false, error: { message: error.message, code: "DB_ERROR" } };
     }
 
@@ -360,6 +386,8 @@ export async function quickCaptureNote(
 
     // For quick capture, we store plaintext temporarily
     // TODO: Implement proper client-side encryption flow
+    console.log("[quickCaptureNote] Creating note for userId:", userId);
+
     const { data, error } = await supabaseAdmin
       .from("notes")
       .insert({
@@ -373,13 +401,16 @@ export async function quickCaptureNote(
       .single();
 
     if (error) {
-      console.error("Supabase insert error:", error);
+      console.error("[quickCaptureNote] Supabase insert error:", error);
       return { success: false, error: { message: error.message, code: "DB_ERROR" } };
     }
+
+    console.log("[quickCaptureNote] Note created successfully, id:", data.id);
 
     revalidatePath("/dashboard/notes");
     revalidatePath("/dashboard/chat");
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard/profile");
 
     return {
       success: true,

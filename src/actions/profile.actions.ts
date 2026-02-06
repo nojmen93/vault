@@ -196,11 +196,17 @@ export async function checkProfileStatus(): Promise<
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId);
 
+    // Debug logging
+    console.log("[checkProfileStatus] userId:", userId);
+    console.log("[checkProfileStatus] count:", count, "error:", countError);
+
     if (countError) {
+      console.error("[checkProfileStatus] Count error:", countError);
       return { success: false, error: { message: countError.message, code: "DB_ERROR" } };
     }
 
     const noteCount = count || 0;
+    console.log("[checkProfileStatus] Final noteCount:", noteCount);
 
     // Get profile
     const { data: profileData, error: profileError } = await supabaseAdmin
