@@ -180,91 +180,250 @@ pnpm add -D package-name
 
 ---
 
-## Testing
+## Testing Strategy
 
-### Unit Tests (Vitest)
+### Test Pyramid
 
-```bash
-# Run all tests
-pnpm test
+**Unit Tests (70%):**
+- Pure functions in `src/lib/`
+- Crypto operations
+- Data transformations
+- No database or auth mocks
 
-# Run with coverage
-pnpm test:coverage
+**Integration Tests (20%):**
+- Server actions with Supabase local
+- Full CRUD flows
+- RLS policy validation
+- Encryption round-trips
 
-# Run specific file
-pnpm test src/lib/utils.test.ts
-```
+**E2E Tests (10%):**
+- Critical user flows only
+- Quick Capture → Idea Cloud → Incubator
+- GitHub OAuth flow
+- Not every edge case
 
-### E2E Tests (Playwright)
+### Unit Test Patterns
 
-```bash
-# Run E2E tests
-pnpm test:e2e
+**Location:** `src/lib/__tests__/`
 
-# Run with UI
-pnpm test:e2e --ui
-```
-
-### Writing Tests
-
+**Example: Crypto Testing**
 ```typescript
-// src/lib/utils.test.ts
-import { describe, it, expect } from 'vitest';
-import { cn } from './utils';
+// src/lib/crypto/__tests__/encryption.test.ts
+import { describe, test, expect } from 'vitest';
+import { encrypt, decrypt } from '../encryption';
 
-describe('cn utility', () => {
-  it('merges class names', () => {
-    expect(cn('a', 'b')).toBe('a b');
+describe('AES-256-GCM Encryption', () => {
+  test('encrypts and decrypts data correctly', () => {
+    const plaintext = { title: 'Test Note', body: 'Secret content' };
+    const key = 'test-key-32-bytes-long-exactly!!';
+    
+    const encrypted = encrypt(plaintext, key);
+    const decrypted = decrypt(encrypted, key);
+    
+    expect(decrypted).toEqual(plaintext);
+  });
+
+  test('produces different ciphertext for same plaintext', () => {
+    const plaintext = { title: 'Test' };
+    const key = 'test-key-32-bytes-long-exactly!!';
+    
+    const encrypted1 = encrypt(plaintext, key);
+    const encrypted2 = encrypt(plaintext, key);
+    
+    expect(encrypted1).not.toEqual(encrypted2); // Nonce randomization
+  });
+
+  test('throws on tampered ciphertext', () => {
+    const plaintext = { title: 'Test' };
+    const key = 'test-key-32-bytes-long-exactly!!';
+    
+    const encrypted = encrypt(plaintext, key);
+    const tampered = encrypted.slice(0, -1) + 'X'; // Corrupt last byte
+    
+    expect(() => decrypt(tampered, key)).toThrow();
   });
 });
 ```
 
----
+**Run:** `pnpm test`
 
-## Code Style
+### Integration Test Patterns
 
-### Formatting
+**Location:** `src/actions/__tests__/`
 
-Prettier handles formatting automatically:
-
+**Setup: Supabase Local**
 ```bash
-# Format all files
-pnpm format
+# Start local Supabase
+supabase start
 
-# Check formatting
-pnpm format:check
+# Run migrations
+supabase db reset
+
+# Tests use SUPABASE_URL and SUPABASE_ANON_KEY from local instance
 ```
 
-### Linting
+**Example: Server Action Testing**
+```typescript
+// src/actions/__tests__/notes.actions.test.ts
+import { describe, test, expect, beforeEach } from 'vitest';
+import { createNote, getNotes } from '../notes.actions';
+import { createClient } from '@/lib/db/client';
 
-ESLint catches code issues:
+describe('Note Actions', () => {
+  const testUserId = 'test-user-123';
+  
+  beforeEach(async () => {
+    // Clean test data
+    const supabase = createClient();
+    await supabase.from('notes').delete().eq('user_id', testUserId);
+  });
 
-```bash
-# Run linter
-pnpm lint
+  test('creates encrypted note successfully', async () => {
+    const result = await createNote({
+      userId: testUserId,
+      content: { title: 'Test', body: 'Content' },
+      tags: ['test']
+    });
+    
+    expect(result.success).toBe(true);
+    expect(result.data?.id).toBeDefined();
+    
+    // Verify encryption
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('notes')
+      .select('encrypted_content')
+      .eq('id', result.data!.id)
+      .single();
+    
+    expect(data?.encrypted_content).not.toContain('Test'); // Not plaintext
+  });
 
-# Fix auto-fixable issues
-pnpm lint:fix
+  test('enforces RLS policies', async () => {
+    // Create note as user A
+    await createNote({
+      userId: 'user-a',
+      content: { title: 'Private' },
+      tags: []
+    });
+    
+    // Try to fetch as user B
+    const result = await getNotes({ userId: 'user-b' });
+    
+    expect(result.data).toHaveLength(0); // Cannot see user A's notes
+  });
+});
 ```
 
-### TypeScript
+**Run:** `pnpm test:integration`
 
-Strict mode is enabled. Fix all type errors:
+### E2E Test Patterns
 
-```bash
-pnpm type-check
+**Location:** `e2e/`
+
+**Setup: Playwright**
+```typescript
+// playwright.config.ts
+export default defineConfig({
+  use: {
+    baseURL: 'http://localhost:3000',
+  },
+  webServer: {
+    command: 'pnpm dev',
+    port: 3000,
+  },
+});
 ```
 
----
+**Example: Critical Flow**
+```typescript
+// e2e/quick-capture.spec.ts
+import { test, expect } from '@playwright/test';
 
-## Getting Help
+test('Quick Capture flow', async ({ page }) => {
+  await page.goto('/');
+  
+  // Open Quick Capture
+  await page.keyboard.press('Meta+K');
+  await expect(page.locator('[data-testid="quick-capture-modal"]')).toBeVisible();
+  
+  // Create note
+  await page.fill('[data-testid="note-title"]', 'E2E Test Note');
+  await page.fill('[data-testid="note-body"]', 'Test content');
+  await page.click('[data-testid="save-note"]');
+  
+  // Verify in Idea Cloud
+  await expect(page.locator('[data-testid="idea-bubble"]')).toContainText('E2E Test Note');
+});
+```
 
-- Check existing issues before creating new ones
-- Use discussions for questions
-- Tag maintainers for urgent issues
+**Run:** `pnpm test:e2e`
 
----
+### Mock Strategies
 
-## License
+**Clerk Auth Mocking:**
+```typescript
+// src/lib/__tests__/mocks/clerk.ts
+vi.mock('@clerk/nextjs/server', () => ({
+  auth: () => ({
+    userId: 'test-user-123',
+    sessionId: 'test-session',
+  }),
+}));
+```
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+**OpenAI API Mocking:**
+```typescript
+// src/lib/__tests__/mocks/openai.ts
+vi.mock('openai', () => ({
+  OpenAI: vi.fn(() => ({
+    embeddings: {
+      create: vi.fn().mockResolvedValue({
+        data: [{ embedding: new Array(1536).fill(0.1) }],
+      }),
+    },
+  })),
+}));
+```
+
+### Crypto Testing Guidelines
+
+**Never test by decrypting in assertions:**
+```typescript
+// ❌ BAD: Exposes decryption key in test
+expect(decrypt(encrypted, key)).toEqual(plaintext);
+
+// ✅ GOOD: Test round-trip without exposing logic
+const result = encrypt(plaintext, key);
+const recovered = decrypt(result, key);
+expect(recovered).toEqual(plaintext);
+```
+
+**Test encryption properties:**
+- Non-deterministic (same input → different output)
+- Tamper-proof (modified ciphertext → throw)
+- Key-dependent (wrong key → throw)
+
+### Running Tests
+
+**All tests:**
+```bash
+pnpm test          # Unit tests (fast)
+pnpm test:int      # Integration tests (requires Supabase local)
+pnpm test:e2e      # E2E tests (requires dev server)
+pnpm test:ci       # All tests in sequence (CI pipeline)
+```
+
+**Coverage:**
+```bash
+pnpm test:coverage  # Generates coverage report in coverage/
+```
+
+**Target: 80% coverage for `src/lib/`, 60% for `src/actions/`**
+
+### Pre-Commit Checklist
+
+- [ ] All tests pass: `pnpm test:ci`
+- [ ] No type errors: `pnpm type-check`
+- [ ] Linting passes: `pnpm lint`
+- [ ] Build succeeds: `pnpm build`

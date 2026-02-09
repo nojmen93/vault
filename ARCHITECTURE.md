@@ -273,3 +273,134 @@ saved_suggestions (
 8. **GitHub Git Data API**: Single commit with multiple files via tree/blob API
 9. **Persona classification**: Users classified into personas for better AI suggestions
 10. **Plain language AI**: Discovery prompts avoid jargon for non-technical users
+
+
+## Database Schemas
+
+### Core Tables
+
+#### notes
+```sql
+CREATE TABLE notes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL, -- Clerk user ID
+  encrypted_content TEXT NOT NULL, -- AES-256-GCM encrypted JSON
+  encryption_version TEXT NOT NULL DEFAULT 'v1',
+  embedding VECTOR(1536), -- OpenAI ada-002 embeddings
+  tags TEXT[], -- Plaintext tags for filtering
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_notes_user_id ON notes(user_id);
+CREATE INDEX idx_notes_embedding ON notes USING ivfflat (embedding vector_cosine_ops);
+CREATE INDEX idx_notes_tags ON notes USING gin(tags);
+```
+
+#### incubator_sessions
+```sql
+CREATE TABLE incubator_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  note_id UUID NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
+  encrypted_analysis TEXT NOT NULL, -- Encrypted Claude analysis
+  status TEXT NOT NULL DEFAULT 'pending', -- pending | completed | failed
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_incubator_note_id ON incubator_sessions(note_id);
+```
+
+#### github_integrations
+```sql
+CREATE TABLE github_integrations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL UNIQUE,
+  encrypted_access_token TEXT NOT NULL, -- GitHub OAuth token
+  github_username TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### Row Level Security Policies
+
+#### notes RLS
+```sql
+ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can only access their own notes"
+  ON notes
+  FOR ALL
+  USING (user_id = auth.jwt() ->> 'sub');
+```
+
+#### incubator_sessions RLS
+```sql
+ALTER TABLE incubator_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can only access their own sessions"
+  ON incubator_sessions
+  FOR ALL
+  USING (user_id = auth.jwt() ->> 'sub');
+```
+
+#### github_integrations RLS
+```sql
+ALTER TABLE github_integrations ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can only access their own GitHub integration"
+  ON github_integrations
+  FOR ALL
+  USING (user_id = auth.jwt() ->> 'sub');
+```
+
+### Encryption Boundaries
+
+**Encrypted Fields:**
+- `notes.encrypted_content` - Full note content (title, body, metadata)
+- `incubator_sessions.encrypted_analysis` - Claude analysis results
+- `github_integrations.encrypted_access_token` - OAuth tokens
+
+**Plaintext Fields:**
+- `notes.tags` - Required for filtering/search UX
+- `notes.embedding` - Cannot be encrypted (used for cosine similarity)
+- All `user_id` fields - Required for RLS
+- All timestamps - Required for sorting/analytics
+
+**Rationale:** Embeddings must be plaintext for pgvector search. Tags are plaintext for UX convenience but contain no sensitive data.
+
+### Migration Strategy
+
+**Versioning:**
+- `encryption_version` field on encrypted tables
+- Allows backward-compatible encryption upgrades
+- Current version: `v1` (AES-256-GCM)
+
+**Migration Workflow:**
+1. Create migration in `supabase/migrations/`
+2. Test locally: `supabase db reset`
+3. Apply to staging: `supabase db push --db-url $STAGING_URL`
+4. Verify with integration tests
+5. Apply to prod: `supabase db push --db-url $PROD_URL`
+
+**Rollback:**
+- Keep last 3 migrations in git history
+- Use `supabase migration repair` for failed migrations
+- Never modify existing migrations, always create new ones
+
+### Edge Cases
+
+**Orphaned Records:**
+- `incubator_sessions` cascade deletes when parent `note` is deleted
+- No orphan cleanup needed due to foreign key constraints
+
+**Concurrent Updates:**
+- Use optimistic locking with `updated_at` timestamp checks
+- Client must send last known `updated_at` value
+- Server rejects if timestamps don't match
+
+**Embedding Null States:**
+- New notes have `embedding = NULL` until background job completes
+- Semantic search excludes notes where `embedding IS NULL`
+- UI shows "Processing..." state for notes without embeddings
